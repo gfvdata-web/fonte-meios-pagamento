@@ -1,0 +1,213 @@
+{
+  "meta": {
+    "slug": "meios_pagamento_mensal",
+    "atualizado_em": "2026-08-15"
+  },
+
+  "leitura": [
+    {
+      "tabela_id": "bruto",
+      "texto": "A API entrega o dado em formato wide — 13 colunas, uma linha por mês — e em ordem decrescente, com o mês mais recente na primeira posição. Cada forma de pagamento ocupa um par de colunas (`quantidadeX`/`valorX`), o que significa que uma forma nova só aparece com um par de colunas novas: a estrutura da resposta muda quando o BCB muda o rol de instrumentos. É esse formato que a Etapa 3 desfaz, e é por isso que existe uma tabela de-para entre coluna do bruto e valor da dimensão."
+    },
+    {
+      "tabela_id": "tidy",
+      "texto": "1.746 linhas = 291 meses × 6 formas, chave (`ano_mes`, `forma_pagamento`) validada sem duplicatas e sem lacuna de mês em 24 anos de série. Não há nulos: a ausência é registrada como zero, e isso é uma armadilha — zero em 2010 na coluna do Pix não significa 'ninguém usou Pix', significa 'Pix não existia'. Toda média, mediana e desvio sobre a série cheia carrega esse viés."
+    },
+    {
+      "tabela_id": "aux_formas",
+      "texto": "É a tabela que responde 'o que existe quando'. Ela mostra que só TED cobre os 291 meses; Pix tem 68; TEC e DOC pararam em fev/2024; e cheque e boleto entram na série depois do início (2004-05 e 2005-02), o que provavelmente é entrada na estatística e não estreia do instrumento — está em perguntas abertas."
+    }
+  ],
+
+  "armadilhas": [
+    {
+      "titulo": "Zero estrutural x zero real",
+      "texto": "As colunas do Pix são zero em 223 dos 291 meses porque o Pix só existe desde nov/2020 — não porque o volume foi nulo. O mesmo vale para TEC e DOC depois de fev/2024, e para cheque e boleto antes de 2004/2005. Qualquer estatística descritiva (média, mediana, desvio, CV) precisa ser calculada sobre a janela em que a forma existiu, não sobre a série inteira, sob pena de dividir por 291 um numerador que só tem 68 parcelas.",
+      "impacto": "alto"
+    },
+    {
+      "titulo": "Duas unidades diferentes na mesma tabela",
+      "texto": "`quantidade` está em milhares de transações e `valor` em R$ milhões. O ticket médio, portanto, não é `valor / quantidade` — é `(valor × 1e6) / (quantidade × 1e3)`, ou seja, `valor / quantidade × 1000`. Errar isso dá um ticket médio mil vezes menor e passa despercebido porque a ordem de grandeza continua plausível.",
+      "impacto": "alto"
+    },
+    {
+      "titulo": "A série não é o mercado inteiro",
+      "texto": "Cartão de crédito e débito não estão nesta fonte — a estatística mensal do BCB cobre transferências e instrumentos de liquidação (Pix, TED, TEC, cheque, boleto, DOC). Falar em 'participação nos meios de pagamento do Brasil' com estes dados exclui o cartão, que é o principal concorrente do Pix no varejo. A base trimestral do BCB, que tem cartões, é fonte candidata separada.",
+      "impacto": "medio"
+    },
+    {
+      "titulo": "Valores nominais",
+      "texto": "Não há deflação nesta fonte. Comparar o valor de 2002 com o de 2026 sem deflacionar mistura crescimento real com inflação acumulada de mais de duas décadas. O projeto já tem o padrão de deflação por IPCA (SGS 433) implementado em `arrecadacao_federal` — dá para reaproveitar.",
+      "impacto": "alto"
+    }
+  ],
+
+  "comparativos": [
+    {
+      "id": "C1",
+      "titulo": "O Pix venceu em quantidade, não em valor",
+      "pergunta": "O Pix substituiu o TED ou os dois ocupam nichos diferentes?",
+      "colunas": ["ano_mes", "forma_pagamento", "quantidade", "valor"],
+      "o_que_esperar": "Medido: o Pix passou o TED em quantidade em jan/2021, dois meses depois do lançamento, e nunca o passou em valor — em jun/2026 o TED ainda responde por 50,2% do valor contra 42,6% do Pix. O ticket médio explica: R$ 66.131 no TED contra R$ 467 no Pix. A leitura de 'substituição' é falsa no agregado; o que houve foi captura do varejo pulverizado, com o atacado permanecendo no TED. Um gráfico que mostre só quantidade conta uma história, e só valor conta a oposta — os dois juntos contam a certa."
+    },
+    {
+      "id": "C2",
+      "titulo": "Quem o Pix realmente canibalizou",
+      "pergunta": "Se não foi o TED, qual instrumento perdeu volume para o Pix?",
+      "colunas": ["ano_mes", "forma_pagamento", "quantidade", "valor"],
+      "o_que_esperar": "Candidatos com ticket médio próximo ao do Pix: boleto (R$ 1.694) e DOC. O boleto tem pico de quantidade em mar/2022, depois do Pix já estar maduro, então a canibalização não é óbvia — pode haver deslocamento apenas na margem, ou o boleto pode estar sustentado por cobrança recorrente (a mesma fatia que o Pix Automático mira desde out/2025). DOC e TEC morreram, mas eram irrelevantes em volume quando morreram."
+    },
+    {
+      "id": "C3",
+      "titulo": "A morte lenta do cheque",
+      "pergunta": "Em que ritmo o cheque desapareceu, e o Pix acelerou essa queda?",
+      "colunas": ["ano_mes", "forma_pagamento", "quantidade", "valor"],
+      "o_que_esperar": "Pico de valor em out/2013 (R$ 113,7 bi) contra R$ 30,8 bi em jun/2026 — queda de 73% em termos nominais, portanto muito maior em termos reais. A queda começa bem antes do Pix; a pergunta é se há inflexão visível em nov/2020 ou se a tendência é uma exponencial única desde 2013."
+    },
+    {
+      "id": "C4",
+      "titulo": "Sazonalidade de dezembro",
+      "pergunta": "O padrão sazonal é o mesmo em todas as formas?",
+      "colunas": ["ano_mes", "forma_pagamento", "quantidade", "valor"],
+      "o_que_esperar": "Espera-se pico de dezembro no varejo (Pix, boleto) e um padrão diferente no TED, mais ligado ao calendário corporativo e tributário. Se o TED tiver pico em datas de recolhimento, isso conecta esta fonte diretamente com `arrecadacao_federal`."
+    }
+  ],
+
+  "contexto_externo": [
+    {
+      "titulo": "Pix entra em operação plena",
+      "resumo": "O Pix foi lançado pelo Banco Central em novembro de 2020 como sistema de pagamentos instantâneos disponível 24 horas por dia, todos os dias.",
+      "numero": "nov/2020",
+      "fonte": "Banco Central do Brasil — Portal de Dados Abertos (Estatísticas do Pix)",
+      "url": "https://dadosabertos.bcb.gov.br/dataset/pix",
+      "consultado_em": "2026-08-15",
+      "por_que_importa": "Marca o início da coluna do Pix na série. Todo mês anterior a nov/2020 é zero estrutural, e a data é a fronteira de qualquer janela de comparação antes/depois."
+    },
+    {
+      "titulo": "Fim do DOC e do TEC",
+      "resumo": "Os bancos associados à Febraban encerraram a emissão de DOC e TEC em 15/01/2024 e fecharam o processamento em 29/02/2024. O DOC, criado em 1985, havia sido reduzido a 0,09% do total de operações em 2022.",
+      "numero": "29/02/2024",
+      "fonte": "Febraban",
+      "url": "https://portal.febraban.org.br/noticia/3926/pt-br/",
+      "consultado_em": "2026-08-15",
+      "por_que_importa": "Confirma que os zeros de TEC e DOC a partir de mar/2024, detectados pelo perfil, são descontinuação e não falha de coleta. As duas séries devem ser tratadas como encerradas, não como ausentes."
+    },
+    {
+      "titulo": "Pix Automático torna-se obrigatório",
+      "resumo": "O Banco Central anunciou o Pix Automático em junho de 2025 para cobranças recorrentes com autorização única do pagador; a oferta passou a ser obrigatória para as instituições em outubro de 2025.",
+      "numero": "out/2025",
+      "fonte": "Agência Brasil (EBC)",
+      "url": "https://agenciabrasil.ebc.com.br/economia/noticia/2025-06/banco-central-anuncia-o-pix-automatico",
+      "consultado_em": "2026-08-15",
+      "por_que_importa": "É o ataque direto do Pix ao território do boleto (cobrança recorrente). A série tem 8 meses depois de out/2025 — pouco para conclusão, suficiente para levantar a hipótese e marcar a data no gráfico."
+    }
+  ],
+
+  "cruzamentos": [
+    {
+      "com_fonte": "arrecadacao_federal",
+      "chave": "ano_mes",
+      "pergunta": "Os picos mensais de TED coincidem com as datas de recolhimento de tributos federais? Se coincidirem, o TED é em boa parte infraestrutura de arrecadação, não de comércio.",
+      "cuidado": "Períodos diferentes (arrecadação começa em 1994, esta em 2002) e unidades diferentes de valor — as duas em R$ milhões, mas a arrecadação tem versão deflacionada e esta não. Compare taxas de variação, não níveis."
+    },
+    {
+      "com_fonte": "credito_modalidade",
+      "chave": "ano_mes",
+      "pergunta": "O crescimento do Pix acompanha a expansão do crédito PF, ou são fenômenos independentes? E o boleto — cai quando o cartão parcelado cresce?",
+      "cuidado": "Crédito começa em mar/2011 e é **estoque** (saldo da carteira), enquanto meios de pagamento é **fluxo** mensal. Comparar nível com nível é erro de tipo; use variação sobre variação."
+    }
+  ],
+
+  "pauta": [
+    {
+      "id": "V1",
+      "titulo": "Quantidade x valor, lado a lado",
+      "pergunta": "O Pix ganhou em quantidade e perdeu em valor — em que mês cada cruzamento aconteceu (ou não)?",
+      "tabela": "tidy",
+      "colunas": ["ano_mes", "forma_pagamento", "quantidade", "valor"],
+      "tipo_grafico": "dois gráficos de linha empilhados verticalmente, eixo x compartilhado",
+      "por_que_esse_tipo": "A tese central da fonte é a divergência entre as duas medidas. Um alternador que troca a métrica esconde exatamente o que importa: as duas precisam estar visíveis ao mesmo tempo, no mesmo eixo de tempo, para o olho fazer a comparação sem memória.",
+      "status": "proposto",
+      "prioridade": "alta",
+      "esforco": "medio",
+      "comentario": "",
+      "decidido_em": null
+    },
+    {
+      "id": "V2",
+      "titulo": "Ticket médio por forma",
+      "pergunta": "Qual é o nicho de cada instrumento, medido pelo valor típico da transação?",
+      "tabela": "tidy",
+      "colunas": ["ano_mes", "forma_pagamento", "quantidade", "valor"],
+      "tipo_grafico": "barras horizontais no último mês + linha da evolução do ticket do Pix",
+      "por_que_esse_tipo": "Ticket médio é uma razão, não um total: barra empilhada e área seriam mentirosas. A escala vai de R$ 467 a R$ 66 mil, então o eixo precisa ser logarítmico ou a barra do TED esmaga as outras.",
+      "status": "proposto",
+      "prioridade": "alta",
+      "esforco": "baixo",
+      "comentario": "",
+      "decidido_em": null
+    },
+    {
+      "id": "V3",
+      "titulo": "Participação em valor, com marcos anotados",
+      "pergunta": "Como a fatia de cada forma se redistribuiu, e o que aconteceu no mundo quando ela virou?",
+      "tabela": "tidy",
+      "colunas": ["ano_mes", "forma_pagamento", "valor"],
+      "tipo_grafico": "área empilhada 100% com linhas verticais anotadas (nov/2020 Pix, fev/2024 fim do DOC/TEC, out/2025 Pix Automático)",
+      "por_que_esse_tipo": "A pergunta é sobre fatia, não sobre nível — empilhada 100% responde direto. As anotações são o que transforma o gráfico de descritivo em explicativo, e as três datas já estão documentadas em contexto_externo.",
+      "status": "proposto",
+      "prioridade": "alta",
+      "esforco": "medio",
+      "comentario": "",
+      "decidido_em": null
+    },
+    {
+      "id": "V4",
+      "titulo": "Série deflacionada pelo IPCA",
+      "pergunta": "Quanto do crescimento de 24 anos é volume real e quanto é inflação?",
+      "tabela": "tidy",
+      "colunas": ["ano_mes", "valor"],
+      "tipo_grafico": "linha dupla — nominal x constante, base no último mês",
+      "por_que_esse_tipo": "Sem o par nominal/real o leitor não tem como saber o tamanho do efeito. Exige acrescentar o IPCA (SGS 433) ao pipeline, como já é feito em arrecadacao_federal — é a mudança de maior impacto analítico e a de maior custo aqui.",
+      "status": "proposto",
+      "prioridade": "media",
+      "esforco": "alto",
+      "comentario": "",
+      "decidido_em": null
+    },
+    {
+      "id": "V5",
+      "titulo": "Estatística descritiva sobre a janela ativa",
+      "pergunta": "Qual a média, o desvio e o coeficiente de variação de cada forma no período em que ela de fato existiu?",
+      "tabela": "tidy",
+      "colunas": ["ano_mes", "forma_pagamento", "quantidade", "valor"],
+      "tipo_grafico": "tabela, com a janela usada explícita em cada linha",
+      "por_que_esse_tipo": "Corrige a armadilha do zero estrutural, que hoje contamina a tabela de estatística descritiva do painel. Não é gráfico novo — é a correção de um número errado que já está publicado.",
+      "status": "proposto",
+      "prioridade": "alta",
+      "esforco": "baixo",
+      "comentario": "",
+      "decidido_em": null
+    },
+    {
+      "id": "V6",
+      "titulo": "Heatmap mês × ano",
+      "pergunta": "Existe padrão sazonal estável, e ele é o mesmo entre as formas?",
+      "tabela": "tidy",
+      "colunas": ["ano_mes", "forma_pagamento", "quantidade"],
+      "tipo_grafico": "heatmap 12 meses × N anos, uma matriz por forma",
+      "por_que_esse_tipo": "Sazonalidade é padrão de repetição — o olho a encontra numa matriz, não numa linha de 291 pontos onde dezembro fica a 12 pixels do dezembro anterior.",
+      "status": "proposto",
+      "prioridade": "baixa",
+      "esforco": "alto",
+      "comentario": "",
+      "decidido_em": null
+    }
+  ],
+
+  "perguntas_abertas": [
+    "Cheque entra na série em mai/2004 e boleto em fev/2005, enquanto TED começa em abr/2002. É entrada na estatística do BCB ou mudança de metodologia? Não achei nota técnica que explique — só o portal de dados abertos, que não documenta a mudança de escopo.",
+    "O boleto atinge o pico de quantidade em mar/2022, mais de um ano depois do Pix. Isso é resiliência da cobrança recorrente, efeito da retomada pós-pandemia, ou mudança na forma de registro do boleto (a plataforma de Nova Cobrança Registrada)? A resposta muda a leitura de C2.",
+    "A série tem revisão retroativa? Se o BCB recalcula meses anteriores, comparar dois perfis gerados em datas diferentes revelaria isso — vale guardar o perfil de cada coleta para descobrir."
+  ]
+}

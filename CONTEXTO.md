@@ -50,16 +50,22 @@ fonte-meios-pagamento/
 │   ├── config.py               # caminhos + registro da fonte
 │   ├── coleta/meios_pagamento.py       # Etapa 2
 │   ├── tratamento/meios_pagamento.py   # Etapa 3
+│   ├── perfil/meios_pagamento.py       # Etapa E (+ perfil/nucleo.py, motor generico)
 │   ├── analise/meios_pagamento.py      # Etapa 4
 │   └── publicacao/meios_pagamento.py   # Etapa 5
 ├── dados/
 │   ├── brutos/                 # resposta crua da API (regenerável; fora do git)
 │   └── processados/            # CSV tidy
-├── docs/                       # Etapa 6 — site publicado
-│   ├── index.html
+├── docs/                       # Etapas 6 e E — site publicado
+│   ├── index.html                      # Etapa 6 — painel
+│   ├── explorar.html                   # Etapa E — perfil + pauta analitica
 │   ├── css/estilo.css
 │   ├── js/app.js
-│   └── dados/meios_pagamento_mensal.json
+│   ├── js/explorar.js
+│   └── dados/
+│       ├── meios_pagamento_mensal.json         # Etapa 5 (gerado)
+│       ├── perfil_meios_pagamento_mensal.json  # Etapa E (gerado)
+│       └── notas_meios_pagamento_mensal.json   # Etapa E (a mao, nunca sobrescrito)
 └── catalogo/fonte.md           # Etapa 1 — dicionário de dados
 ```
 
@@ -74,7 +80,18 @@ fonte-meios-pagamento/
           ──Etapa 4──▶ métricas          ──Etapa 5──▶ docs/dados/meios_pagamento_mensal.json
                                                  │
                                             ──Etapa 6──▶ docs/index.html
+
+               ──Etapa E──▶  docs/dados/perfil_meios_pagamento_mensal.json  (gerado)
+                             docs/dados/notas_meios_pagamento_mensal.json   (a mao)
+                                     └──▶ docs/explorar.html
 ```
+
+**Etapa E.** Roda depois da Etapa 3 e antes da 4. Perfila as tres camadas (bruto wide da
+Olinda, tidy, de-para das formas) medindo tipos, nulos, chave primaria, joins e lacunas, e
+publica isso ao lado de uma pauta analitica curada. Especificacao completa no repositorio
+`controle-global`, em `prompts/modelo-pagina-exploracao.md`. **A Etapa E so adiciona:** a
+unica alteracao que ela fez em arquivo existente foi o link "Explorar dados" na navegacao do
+`index.html`.
 
 | Etapa | Nome | Código | Entrada → Saída | Status |
 |-------|------|--------|-----------------|--------|
@@ -82,6 +99,7 @@ fonte-meios-pagamento/
 | 2 | Ingestão / coleta | `src/coleta/` | endpoint → JSON bruto | ✅ |
 | 3 | Tratamento & modelagem | `src/tratamento/` | JSON bruto → CSV tidy | ✅ |
 | 4 | Análise estatística | `src/analise/` | CSV tidy → métricas | ✅ |
+| E | Exploração & pauta | `src/perfil/`, `docs/explorar.html` | bruto + tidy + auxiliares → perfil + pauta | ✅ |
 | 5 | Publicação de dados | `src/publicacao/` | tidy + métricas → JSON do front | ✅ |
 | 6 | Dashboard | `docs/` | JSON → site interativo | ✅ |
 | 7 | Documentação & deploy | `README.md`, GitHub Pages | — → site no ar | 🟡 |
