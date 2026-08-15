@@ -60,10 +60,20 @@ def _perfilar_coluna(nome: str, serie: pd.Series, decl: tuple | None) -> dict:
     papel, unidade, descricao = decl if decl else ("nao_declarado", None, None)
     n = len(serie)
     nulos = int(serie.isna().sum())
+    tipo_no_arquivo = str(serie.dtype)   # antes de qualquer conversão
+
+    # Medida entregue como texto (a API do SGS faz isso) ainda é medida: converte para
+    # calcular a estatística de verdade, mas registra que o arquivo guarda string.
+    armazenado_texto = False
+    if papel == "medida" and not pd.api.types.is_numeric_dtype(serie):
+        convertida = pd.to_numeric(serie, errors="coerce")
+        preenchidos = int(serie.notna().sum())
+        if preenchidos and int(convertida.notna().sum()) >= 0.9 * preenchidos:
+            serie, armazenado_texto = convertida, True
 
     col: dict[str, Any] = {
         "nome": nome,
-        "tipo": str(serie.dtype),
+        "tipo": tipo_no_arquivo,
         "papel": papel,
         "unidade": unidade,
         "descricao": descricao,
@@ -71,6 +81,8 @@ def _perfilar_coluna(nome: str, serie: pd.Series, decl: tuple | None) -> dict:
         "pct_nulos": round(100 * nulos / n, 2) if n else 0.0,
         "distintos": int(serie.nunique(dropna=True)),
     }
+    if armazenado_texto:
+        col["armazenado_como_texto"] = True
 
     if pd.api.types.is_numeric_dtype(serie) and papel != "data":
         limpa = serie.dropna()
@@ -84,7 +96,13 @@ def _perfilar_coluna(nome: str, serie: pd.Series, decl: tuple | None) -> dict:
             "negativos": int((limpa < 0).sum()),
         })
     elif papel == "data":
-        col.update({"min_data": _py(serie.min()), "max_data": _py(serie.max())})
+        # dropna antes do min/max: coluna de data com nulos vira object com str + NaN,
+        # e comparar float com str estoura.
+        limpa = serie.dropna()
+        col.update({
+            "min_data": _py(limpa.min()) if not limpa.empty else None,
+            "max_data": _py(limpa.max()) if not limpa.empty else None,
+        })
         contagem = serie.value_counts().head(TOP_VALORES)
         col["top_valores"] = [
             {"valor": _py(v), "n": int(q), "pct": round(100 * q / n, 2)}
@@ -127,6 +145,9 @@ def _alertas(df: pd.DataFrame, colunas: list[dict], chave_ok: bool, dups: int) -
     if not chave_ok:
         saida.append(f"chave primária declarada NÃO é única: {dups} combinações repetidas")
     for c in colunas:
+        if c.get("armazenado_como_texto"):
+            saida.append(f"coluna `{c['nome']}` é medida mas está guardada como texto "
+                         f"({c['tipo']}) — a conversão para número acontece adiante no pipeline")
         if c["papel"] == "nao_declarado":
             saida.append(f"coluna `{c['nome']}` existe no arquivo mas não está na DECLARACAO")
         if c["pct_nulos"] == 100.0:
