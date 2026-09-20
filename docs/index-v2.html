@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meios de Pagamento no Brasil — v2 (experimental)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/estilo-v2.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <a class="switch-versao" href="index.html">← Voltar para a versão clássica (v1)</a>
+
+  <header class="cabecalho-v2">
+    <div class="conteiner">
+      <p class="selo-v2">Versão experimental · em construção</p>
+      <p class="sobrelinha">Banco Central do Brasil · Dados Abertos</p>
+      <h1>Como o Brasil paga</h1>
+      <p class="subtitulo">A composição dos meios de pagamento mudou radicalmente em duas décadas. Esta é a história contada pelos dados mensais do BCB — <span id="meta-periodo">carregando período…</span>.</p>
+      <nav class="nav-paineis" aria-label="Painéis do projeto">
+        <a href="index-v2.html" aria-current="page">Painel (v2)</a>
+        <a href="explorar.html">Explorar dados</a>
+        <span class="nav-sep"></span>
+        <a href="https://gfvdata-web.github.io/fonte-arrecadacao-federal/">Arrecadação federal</a>
+        <a href="https://gfvdata-web.github.io/fonte-credito-modalidade/">Crédito por modalidade</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="conteiner">
+
+    <!-- Abertura narrativa -->
+    <section class="narrativa narrativa-abertura">
+      <p id="txt-abertura">Carregando a série histórica…</p>
+    </section>
+
+    <!-- Gráfico 1: participação por ano (colunas agrupadas) -->
+    <article class="cartao-v2">
+      <div class="cartao-v2-cabecalho">
+        <div>
+          <p class="rotulo-secao">Participação por ano</p>
+          <h2>Quem ganhou espaço, quem perdeu</h2>
+          <p class="cartao-v2-desc" id="desc-participacao">Fatia de cada forma de pagamento no total de cada ano.</p>
+        </div>
+        <div class="filtros-v2">
+          <div class="pilulas" role="tablist" aria-label="Métrica do gráfico de participação">
+            <button class="pilula-btn ativo" data-metrica-part="quantidade" role="tab">Quantidade</button>
+            <button class="pilula-btn" data-metrica-part="valor" role="tab">Valor</button>
+          </div>
+          <div class="pilulas" role="tablist" aria-label="Período do gráfico de participação" id="periodo-participacao"></div>
+        </div>
+      </div>
+      <div class="canvas-wrap-v2 canvas-participacao"><div class="canvas-scroll-inner" id="participacaoScrollInner"><canvas id="gParticipacaoAno"></canvas></div></div>
+      <p class="legenda-nota">Cada grupo de barras soma 100% — a altura de cada barra é a fatia daquela forma no ano.</p>
+      <details class="tabela-expansivel">
+        <summary>Ver tabela de participação por ano (%)</summary>
+        <div class="tabela-wrap"><table class="tabela tabela-densa" id="tabela-participacao"><thead></thead><tbody></tbody></table></div>
+      </details>
+    </article>
+
+    <!-- Narrativa intermediária -->
+    <section class="narrativa">
+      <p id="txt-meio">Calculando a mudança de composição…</p>
+    </section>
+
+    <!-- Gráfico 2: linha do tempo -->
+    <article class="cartao-v2">
+      <div class="cartao-v2-cabecalho">
+        <div>
+          <p class="rotulo-secao">Linha do tempo</p>
+          <h2>A trajetória de cada forma de pagamento</h2>
+          <p class="cartao-v2-desc" id="desc-evolucao">Série mensal por forma de pagamento.</p>
+        </div>
+        <div class="filtros-v2">
+          <div class="pilulas" role="tablist" aria-label="Métrica da linha do tempo">
+            <button class="pilula-btn ativo" data-metrica-evo="quantidade" role="tab">Quantidade</button>
+            <button class="pilula-btn" data-metrica-evo="valor" role="tab">Valor</button>
+            <button class="pilula-btn" data-metrica-evo="ticket" role="tab">Ticket médio</button>
+          </div>
+          <div class="pilulas" role="tablist" aria-label="Período da linha do tempo" id="periodo-evolucao"></div>
+        </div>
+      </div>
+      <div class="canvas-wrap-v2"><canvas id="gEvolucaoV2"></canvas></div>
+      <details class="tabela-expansivel">
+        <summary>Ver tabela da série selecionada</summary>
+        <div class="tabela-wrap"><table class="tabela tabela-densa" id="tabela-evolucao"><thead></thead><tbody></tbody></table></div>
+      </details>
+    </article>
+
+    <!-- Narrativa de fechamento -->
+    <section class="narrativa narrativa-fechamento">
+      <p id="txt-fechamento">Resumindo o período selecionado…</p>
+    </section>
+
+  </main>
+
+  <footer class="rodape-v2">
+    <div class="conteiner">
+      <p id="rodape-fonte-v2"></p>
+      <p class="rodape-obs">Unidades: quantidade em milhares de transações; valor em R$ milhões. Projeto de estudo — dados abertos do Banco Central do Brasil.
+        Versão v2 experimental — layout e narrativa em evolução.</p>
+    </div>
+  </footer>
+
+  <script src="js/app-v2.js"></script>
+</body>
+</html>
