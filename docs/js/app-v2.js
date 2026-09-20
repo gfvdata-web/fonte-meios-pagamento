@@ -110,9 +110,9 @@ const ROTULO_GRANULARIDADE = {
 };
 
 /** Escolhe a granularidade (mensal/trimestral/semestral/anual/blocos de N anos) mais próxima de
- *  ~10 colunas — o "ponto ideal" de leitura — sem nunca estourar o limite de colunas da tela. */
+ *  ~20 colunas — o "ponto ideal" de leitura — sem nunca estourar o limite de colunas da tela. */
 function escolherGranularidade(qtdMeses, maxColunas) {
-  const ALVO_COLUNAS = 10;
+  const ALVO_COLUNAS = 20;
   const ESCADA = [
     { codigo: "mensal", meses: 1 },
     { codigo: "trimestral", meses: 3 },
@@ -185,8 +185,6 @@ function agregarParticipacaoPorPeriodo(i0, i1, campo, granularidade) {
 // ---------- Renderização: cabeçalho ----------
 function renderCabecalho() {
   const meta = dados.meta;
-  document.getElementById("meta-periodo").textContent =
-    `${fmtMesAno(meta.periodo.inicio)} a ${fmtMesAno(meta.periodo.fim)}`;
   document.getElementById("rodape-fonte-v2").textContent =
     `Fonte: ${meta.fonte}. Atualizado em ${new Date(meta.gerado_em).toLocaleDateString("pt-BR")}.`;
 }
@@ -204,7 +202,7 @@ function renderNarrativaAbertura() {
     `Desde ${anoInicio}, o Banco Central acompanha, mês a mês, como o Brasil movimenta dinheiro. `
     + `Hoje, em ${fmtMesAno(mesRef)}, o <strong>${lider.forma}</strong> já responde por `
     + `<strong>${fmtPct(lider.part_qtd_pct)}</strong> de todas as transações registradas — `
-    + `a maior fatia entre as seis formas de pagamento acompanhadas nesta série.`;
+    + `apesar de representar apenas <strong>${fmtPct(lider.part_valor_pct)}</strong> do valor total transacionado.`;
 }
 
 function renderNarrativaMeio(periodos, share, granularidade) {
