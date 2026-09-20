@@ -141,6 +141,30 @@ main { padding: 40px 0 56px; }
 .pilula-btn:hover { color: var(--texto); }
 .pilula-btn.ativo { background: var(--verde); color: #fff; }
 
+/* ---------- Seletor "contar a história de" (linha do tempo) ---------- */
+.foco-forma { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.foco-forma-rotulo { font-size: .78rem; font-weight: 600; color: var(--texto-suave); }
+.pilula-btn-forma { display: inline-flex; align-items: center; gap: 6px; }
+.pilula-btn-forma .ponto-v2 { width: 8px; height: 8px; }
+
+/* ---------- Eventos correlacionados à linha do tempo ---------- */
+.eventos-linha-tempo { margin-top: 18px; }
+.eventos-linha-tempo:empty { margin-top: 0; }
+.eventos-titulo { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--verde-escuro); margin: 0 0 10px; }
+.evento-item {
+  display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--borda);
+}
+.evento-item:first-of-type { border-top: none; }
+.evento-data {
+  flex-shrink: 0; width: 64px; font-size: .78rem; font-weight: 700; color: var(--verde-escuro);
+  font-family: "IBM Plex Sans", sans-serif;
+}
+.evento-corpo h4 { margin: 0 0 3px; font-size: .9rem; font-weight: 600; }
+.evento-corpo p { margin: 0; font-size: .84rem; color: var(--texto-suave); line-height: 1.5; }
+.evento-corpo a { color: var(--verde-escuro); font-size: .78rem; text-decoration: none; }
+.evento-corpo a:hover { text-decoration: underline; }
+.eventos-vazio { font-size: .84rem; color: var(--texto-suave); font-style: italic; }
+
 .canvas-wrap-v2 { position: relative; height: 380px; }
 .canvas-participacao { overflow-x: auto; overflow-y: hidden; }
 .canvas-scroll-inner { position: relative; height: 100%; min-width: 100%; }

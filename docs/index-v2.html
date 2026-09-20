@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="css/estilo-v2.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 </head>
 <body>
   <a class="switch-versao" href="index.html">← Voltar para a versão clássica (v1)</a>
@@ -83,11 +84,16 @@
           <div class="pilulas" role="tablist" aria-label="Período da linha do tempo" id="periodo-evolucao"></div>
         </div>
       </div>
+      <div class="foco-forma">
+        <span class="foco-forma-rotulo">Contar a história de:</span>
+        <div class="pilulas" role="tablist" aria-label="Forma de pagamento em foco" id="foco-forma"></div>
+      </div>
       <div class="canvas-wrap-v2"><canvas id="gEvolucaoV2"></canvas></div>
       <details class="tabela-expansivel">
         <summary>Ver tabela da série selecionada</summary>
         <div class="tabela-wrap"><table class="tabela tabela-densa" id="tabela-evolucao"><thead></thead><tbody></tbody></table></div>
       </details>
+      <div class="eventos-linha-tempo" id="eventos-linha-tempo"></div>
     </article>
 
     <!-- Narrativa de fechamento -->

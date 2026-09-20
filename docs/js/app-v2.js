@@ -3,6 +3,7 @@
    narrativa e gráficos próprios. Nada aqui é compartilhado com js/app.js. */
 
 const ARQUIVO_DADOS = "dados/meios_pagamento_mensal.json";
+const ARQUIVO_EVENTOS = "dados/eventos_meios_pagamento.json";
 const CORES = {
   Pix: "#2a78d6", TED: "#eb6834", Boleto: "#1baf7a",
   Cheque: "#eda100", TEC: "#e87ba4", DOC: "#4a3aa7",
@@ -16,8 +17,10 @@ const PERIODOS = [
 ];
 
 if (window.ChartDataLabels) Chart.register(window.ChartDataLabels);
+if (window["chartjs-plugin-annotation"]) Chart.register(window["chartjs-plugin-annotation"]);
 
 let dados = null;
+let eventos = [];
 let graficoParticipacao = null;
 let graficoEvolucao = null;
 
@@ -25,6 +28,7 @@ let participMetrica = "quantidade"; // "quantidade" | "valor"
 let participPeriodo = "10a";
 let evoMetrica = "quantidade";      // "quantidade" | "valor" | "ticket"
 let evoPeriodo = "5a";
+let focoForma = "Pix";
 
 // ---------- Formatação ----------
 const nf = (casas = 1) => new Intl.NumberFormat("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
@@ -244,19 +248,42 @@ function renderNarrativaFechamento(i0, i1) {
     .filter((x) => x.fim != null)
     .sort((a, b) => b.fim - a.fim);
   const alvo = document.getElementById("txt-fechamento");
-  const lider = ranking[0];
-  if (!lider || lider.cagr == null) {
-    alvo.textContent = "Não há variação suficiente no período selecionado para calcular uma taxa de crescimento.";
+  const foco = ranking.find((x) => x.forma === focoForma) || ranking[0];
+  if (!foco || foco.cagr == null) {
+    alvo.textContent = `Não há variação suficiente no período selecionado para calcular a taxa de crescimento do ${focoForma}.`;
     return;
   }
-  const contraste = ranking.find((x) => x.forma !== lider.forma && x.cagr != null);
+  const contraste = ranking.find((x) => x.forma !== foco.forma && x.cagr != null);
   alvo.innerHTML =
-    `No período de ${fmtMesAno(dados.labels[i0])} a ${fmtMesAno(dados.labels[i1])}, o <strong>${lider.forma}</strong> `
-    + `cresceu a uma taxa média de ${fmtPct(lider.cagr, 1)} ao ano em ${rotuloMetrica(evoMetrica)}`
+    `No período de ${fmtMesAno(dados.labels[i0])} a ${fmtMesAno(dados.labels[i1])}, o <strong>${foco.forma}</strong> `
+    + `${foco.cagr >= 0 ? "cresceu" : "recuou"} a uma taxa média de ${fmtPct(Math.abs(foco.cagr), 1)} ao ano em ${rotuloMetrica(evoMetrica)}`
     + (contraste
       ? `, enquanto o <strong>${contraste.forma}</strong> ${contraste.cagr >= 0 ? "avançou" : "recuou"} `
         + `${fmtPct(Math.abs(contraste.cagr), 1)} ao ano no mesmo período.`
       : ".");
+}
+
+/** Lista, abaixo do gráfico, os eventos catalogados que tocam a forma em foco e caem dentro do período visível. */
+function renderNarrativaEventos(i0, i1) {
+  const labelsPeriodoRaw = dados.labels.slice(i0, i1 + 1);
+  const relevantes = eventos
+    .filter((e) => e.formas.includes(focoForma) && labelsPeriodoRaw.includes(e.data))
+    .sort((a, b) => a.data.localeCompare(b.data));
+  const alvo = document.getElementById("eventos-linha-tempo");
+  const titulo = `<p class="eventos-titulo">O que pode explicar a trajetória do ${focoForma}</p>`;
+  if (!relevantes.length) {
+    alvo.innerHTML = titulo
+      + `<p class="eventos-vazio">Nenhum evento catalogado nesta janela de tempo para o ${focoForma} — amplie o período para ver o contexto.</p>`;
+    return;
+  }
+  alvo.innerHTML = titulo + relevantes.map((e) => `
+    <div class="evento-item">
+      <div class="evento-data">${fmtMesAno(e.data)}</div>
+      <div class="evento-corpo">
+        <h4>${e.titulo}</h4>
+        <p>${e.descricao} <a href="${e.fonte}" target="_blank" rel="noopener">Fonte ↗</a></p>
+      </div>
+    </div>`).join("");
 }
 
 // ---------- Gráfico 1: participação por trimestre (colunas empilhadas) ----------
@@ -328,32 +355,64 @@ function renderTabelaParticipacao(periodos, share) {
   `).join("");
 }
 
+/** #rrggbb -> "rgba(r,g,b,alpha)", para esmaecer as formas que não estão em foco. */
+function comAlpha(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+/** Linhas verticais tracejadas nos meses em que há evento catalogado para a forma em foco. */
+function construirAnotacoesEventos(labelsPeriodoRaw) {
+  const anotacoes = {};
+  eventos
+    .filter((e) => e.formas.includes(focoForma) && labelsPeriodoRaw.includes(e.data))
+    .forEach((e, idx) => {
+      const posicao = labelsPeriodoRaw.indexOf(e.data);
+      anotacoes[`evento${idx}`] = {
+        type: "line", xMin: posicao, xMax: posicao,
+        borderColor: "rgba(20,24,26,.4)", borderWidth: 1, borderDash: [4, 4],
+        label: {
+          display: true, content: e.titulo, position: "start", rotation: -90,
+          backgroundColor: "rgba(20,24,26,.85)", color: "#fff",
+          font: { size: 9, family: "IBM Plex Sans" }, padding: 4,
+        },
+      };
+    });
+  return anotacoes;
+}
+
 // ---------- Gráfico 2: linha do tempo ----------
 function renderGraficoEvolucao() {
   const [i0, i1] = periodoParaIndices(evoPeriodo);
   const campo = evoMetrica === "ticket" ? "ticket" : evoMetrica;
-  const labelsPeriodo = dados.labels.slice(i0, i1 + 1);
+  const labelsPeriodoRaw = dados.labels.slice(i0, i1 + 1);
 
   document.getElementById("desc-evolucao").textContent =
     `Série mensal de ${rotuloMetrica(evoMetrica)} por forma de pagamento, `
-    + `de ${fmtMesAno(dados.labels[i0])} a ${fmtMesAno(dados.labels[i1])}.`;
+    + `de ${fmtMesAno(dados.labels[i0])} a ${fmtMesAno(dados.labels[i1])}. Em foco: ${focoForma}.`;
 
   const ctx = document.getElementById("gEvolucaoV2");
-  const datasets = dados.formas.map((f) => ({
-    label: f,
-    data: dados.series[f][campo].slice(i0, i1 + 1),
-    borderColor: CORES[f],
-    backgroundColor: CORES[f],
-    borderWidth: 2,
-    pointRadius: 0,
-    pointHoverRadius: 4,
-    tension: 0.25,
-  }));
+  // A forma em foco fica cheia e por cima; as demais ficam esmaecidas e ao fundo.
+  const ordemDesenho = [...dados.formas.filter((f) => f !== focoForma), focoForma];
+  const datasets = ordemDesenho.map((f) => {
+    const emFoco = f === focoForma;
+    return {
+      label: f,
+      data: dados.series[f][campo].slice(i0, i1 + 1),
+      borderColor: emFoco ? CORES[f] : comAlpha(CORES[f], 0.25),
+      backgroundColor: CORES[f],
+      borderWidth: emFoco ? 3 : 1.5,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+      tension: 0.25,
+      order: emFoco ? 0 : 1,
+    };
+  });
 
   if (graficoEvolucao) graficoEvolucao.destroy();
   graficoEvolucao = new Chart(ctx, {
     type: "line",
-    data: { labels: labelsPeriodo.map(fmtMesAno), datasets },
+    data: { labels: labelsPeriodoRaw.map(fmtMesAno), datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
@@ -362,6 +421,7 @@ function renderGraficoEvolucao() {
         legend: { labels: { color: cssVar("--texto"), usePointStyle: true, boxWidth: 8, font: { family: "IBM Plex Sans" } } },
         tooltip: { callbacks: { label: (i) => `${i.dataset.label}: ${fmtCampo(campo, i.parsed.y)}` } },
         datalabels: { display: false },
+        annotation: { annotations: construirAnotacoesEventos(labelsPeriodoRaw) },
       },
       scales: {
         x: { ticks: { color: cssVar("--texto-suave"), maxTicksLimit: 12, autoSkip: true }, grid: { display: false } },
@@ -372,6 +432,7 @@ function renderGraficoEvolucao() {
 
   renderTabelaEvolucao(i0, i1, campo);
   renderNarrativaFechamento(i0, i1);
+  renderNarrativaEventos(i0, i1);
 }
 
 /** Tabela-resumo por ano (soma para valor/quantidade, média para ticket médio) — evita centenas de linhas mensais. */
@@ -406,6 +467,24 @@ function montarPilulasPeriodo(container, estadoAtual, aoClicar) {
   `).join("");
   container.querySelectorAll(".pilula-btn").forEach((btn) => {
     btn.addEventListener("click", () => aoClicar(btn.dataset.periodo, container));
+  });
+}
+
+/** Pílulas de "contar a história de <forma>" — troca o foco de destaque/eventos da linha do tempo. */
+function montarPilulasForma() {
+  const cont = document.getElementById("foco-forma");
+  cont.innerHTML = dados.formas.map((f) => `
+    <button class="pilula-btn pilula-btn-forma ${f === focoForma ? "ativo" : ""}" data-forma="${f}">
+      <span class="ponto-v2" style="background:${CORES[f]}"></span>${f}
+    </button>
+  `).join("");
+  cont.querySelectorAll(".pilula-btn-forma").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (btn.dataset.forma === focoForma) return;
+      focoForma = btn.dataset.forma;
+      cont.querySelectorAll(".pilula-btn-forma").forEach((b) => b.classList.toggle("ativo", b.dataset.forma === focoForma));
+      renderGraficoEvolucao();
+    });
   });
 }
 
@@ -468,10 +547,19 @@ async function iniciar() {
     return;
   }
 
+  try {
+    const respEventos = await fetch(ARQUIVO_EVENTOS);
+    eventos = respEventos.ok ? await respEventos.json() : [];
+  } catch (erro) {
+    eventos = [];
+    console.warn("Eventos não carregados:", erro);
+  }
+
   prepararSeriesTicket();
   renderCabecalho();
   renderNarrativaAbertura();
   ligarFiltros();
+  montarPilulasForma();
   renderGraficoParticipacao();
   renderGraficoEvolucao();
 }

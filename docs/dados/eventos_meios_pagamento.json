@@ -1,0 +1,44 @@
+[
+  {
+    "data": "2020-11",
+    "titulo": "Lançamento do Pix",
+    "descricao": "O Banco Central lança o Pix, meio de pagamento instantâneo e gratuito para pessoas físicas, disponível 24 horas por dia.",
+    "formas": ["Pix", "TED", "DOC", "Boleto", "Cheque"],
+    "fonte": "https://agenciabrasil.ebc.com.br/economia/noticia/2025-06/banco-central-anuncia-o-pix-automatico"
+  },
+  {
+    "data": "2021-11",
+    "titulo": "Pix Saque e Pix Troco",
+    "descricao": "Passam a valer as modalidades que permitem sacar dinheiro em espécie em comércios e caixas eletrônicos usando o Pix.",
+    "formas": ["Pix"],
+    "fonte": "https://www.gov.br/pt-br/noticias/financas-impostos-e-gestao-publica/2021/11/pix-saque-e-pix-troco-passam-a-valer-a-partir-desta-segunda-feira-29-11"
+  },
+  {
+    "data": "2023-01",
+    "titulo": "Novas regras de segurança do Pix",
+    "descricao": "Entram em vigor o limite noturno para pessoas físicas, o bloqueio cautelar e o Mecanismo Especial de Devolução (MED), criados para reduzir golpes.",
+    "formas": ["Pix"],
+    "fonte": "https://prensali.substack.com/p/pix-banco-central-novas-regras-seguranca"
+  },
+  {
+    "data": "2024-02",
+    "titulo": "Fim do DOC e do TEC",
+    "descricao": "Os bancos encerram definitivamente as transferências via DOC e TEC (29/02/2024), substituídas por TED e Pix.",
+    "formas": ["DOC", "TEC", "TED", "Pix"],
+    "fonte": "https://portal.febraban.org.br/noticia/3926/pt-br/"
+  },
+  {
+    "data": "2025-02",
+    "titulo": "Pix por Aproximação",
+    "descricao": "A modalidade que permite pagar aproximando o celular da maquininha, sem abrir o aplicativo do banco, chega de forma ampla ao público.",
+    "formas": ["Pix"],
+    "fonte": "https://dock.tech/fluid/blog/financeiro/pix-sistema-pagamentos-instantaneos-banco-central/"
+  },
+  {
+    "data": "2025-06",
+    "titulo": "Pix Automático",
+    "descricao": "Nova modalidade permite pagamentos recorrentes (contas, assinaturas) autorizados uma única vez pelo pagador, sem repetir a ação todo mês.",
+    "formas": ["Pix"],
+    "fonte": "https://agenciabrasil.ebc.com.br/economia/noticia/2025-06/banco-central-anuncia-o-pix-automatico"
+  }
+]
