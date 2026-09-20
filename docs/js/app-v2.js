@@ -99,28 +99,78 @@ function cagrAA(serie, i0, i1) {
   return ((vn / v0) ** (1 / anos) - 1) * 100;
 }
 
-/** "2026-05" -> "2º/26" (trimestre + ano curto). */
-function fmtTrimestre(anoMes) {
-  const [a, m] = anoMes.split("-");
-  const tri = Math.floor((Number(m) - 1) / 3) + 1;
-  return `${tri}º/${a.slice(2)}`;
+/** Nº máximo de colunas legíveis na tela atual (mobile: 10, desktop: 25). */
+function maxColunasTela() {
+  return window.innerWidth < 760 ? 10 : 25;
 }
 
-/** Agrega a série mensal por trimestre-calendário dentro de [i0, i1] e calcula a fatia (%) de cada forma por período. */
-function agregarParticipacaoPorTrimestre(i0, i1, campo) {
+const ROTULO_GRANULARIDADE = {
+  mensal: "mês", trimestral: "trimestre", semestral: "semestre",
+  anual: "ano", multianual: "período",
+};
+
+/** Escolhe a granularidade (mensal/trimestral/semestral/anual/blocos de N anos) mais próxima de
+ *  ~10 colunas — o "ponto ideal" de leitura — sem nunca estourar o limite de colunas da tela. */
+function escolherGranularidade(qtdMeses, maxColunas) {
+  const ALVO_COLUNAS = 10;
+  const ESCADA = [
+    { codigo: "mensal", meses: 1 },
+    { codigo: "trimestral", meses: 3 },
+    { codigo: "semestral", meses: 6 },
+    { codigo: "anual", meses: 12 },
+  ];
+  const bucketIdeal = qtdMeses / ALVO_COLUNAS;
+
+  // Degrau mais próximo do ideal (pode ficar acima do limite da tela em janelas curtas na tela pequena).
+  let escolha = ESCADA.reduce((melhor, o) =>
+    Math.abs(o.meses - bucketIdeal) < Math.abs(melhor.meses - bucketIdeal) ? o : melhor, ESCADA[0]);
+  if (Math.ceil(qtdMeses / escolha.meses) <= maxColunas) return escolha;
+
+  // Não coube: sobe na escada até caber.
+  const maisGrossa = ESCADA.filter((o) => o.meses > escolha.meses)
+    .find((o) => Math.ceil(qtdMeses / o.meses) <= maxColunas);
+  if (maisGrossa) return maisGrossa;
+
+  // Nem anual coube (período muito longo numa tela pequena): agrupa em blocos de N anos.
+  const anos = Math.ceil(qtdMeses / 12);
+  const anosPorBloco = Math.ceil(anos / maxColunas);
+  return { codigo: "multianual", anosPorBloco };
+}
+
+/** Agrega a série mensal na granularidade escolhida dentro de [i0, i1] e calcula a fatia (%) de cada forma por período. */
+function agregarParticipacaoPorPeriodo(i0, i1, campo, granularidade) {
+  const anoAncora = Number(dados.labels[i0].slice(0, 4));
   const periodos = [];
-  const somaPorPeriodo = {}; // chave "ano-Tn" -> {forma: soma}
+  const rotulos = {};
+  const somaPorPeriodo = {};
   for (let k = i0; k <= i1; k++) {
     const label = dados.labels[k];
-    const tri = Math.floor((Number(label.slice(5, 7)) - 1) / 3) + 1;
-    const chave = `${label.slice(0, 4)}-T${tri}`;
-    if (!somaPorPeriodo[chave]) { somaPorPeriodo[chave] = { rotulo: fmtTrimestre(label) }; periodos.push(chave); }
+    const ano = Number(label.slice(0, 4));
+    const mes = Number(label.slice(5, 7));
+    let chave, rotulo;
+    if (granularidade.codigo === "mensal") {
+      chave = `${ano}-${mes}`; rotulo = fmtMesAno(label);
+    } else if (granularidade.codigo === "trimestral") {
+      const t = Math.floor((mes - 1) / 3) + 1;
+      chave = `${ano}-T${t}`; rotulo = `${t}º/${String(ano).slice(2)}`;
+    } else if (granularidade.codigo === "semestral") {
+      const s = Math.floor((mes - 1) / 6) + 1;
+      chave = `${ano}-S${s}`; rotulo = `S${s}/${String(ano).slice(2)}`;
+    } else if (granularidade.codigo === "anual") {
+      chave = `${ano}`; rotulo = `${ano}`;
+    } else {
+      const bloco = Math.floor((ano - anoAncora) / granularidade.anosPorBloco);
+      const anoIni = anoAncora + bloco * granularidade.anosPorBloco;
+      const anoFim = anoIni + granularidade.anosPorBloco - 1;
+      chave = `B${bloco}`; rotulo = granularidade.anosPorBloco > 1 ? `${anoIni}–${anoFim}` : `${anoIni}`;
+    }
+    if (!somaPorPeriodo[chave]) { somaPorPeriodo[chave] = {}; periodos.push(chave); rotulos[chave] = rotulo; }
     dados.formas.forEach((f) => {
       const v = num(dados.series[f][campo][k]);
       somaPorPeriodo[chave][f] = (somaPorPeriodo[chave][f] || 0) + v;
     });
   }
-  const rotulos = periodos.map((p) => somaPorPeriodo[p].rotulo);
+  const rotulosOrdenados = periodos.map((p) => rotulos[p]);
   const share = {}; // forma -> [% por período, na mesma ordem de `periodos`]
   dados.formas.forEach((f) => { share[f] = []; });
   periodos.forEach((p) => {
@@ -129,7 +179,7 @@ function agregarParticipacaoPorTrimestre(i0, i1, campo) {
       share[f].push(total ? (somaPorPeriodo[p][f] / total) * 100 : null);
     });
   });
-  return { periodos: rotulos, share };
+  return { periodos: rotulosOrdenados, share };
 }
 
 // ---------- Renderização: cabeçalho ----------
@@ -157,7 +207,7 @@ function renderNarrativaAbertura() {
     + `a maior fatia entre as seis formas de pagamento acompanhadas nesta série.`;
 }
 
-function renderNarrativaMeio(periodos, share) {
+function renderNarrativaMeio(periodos, share, granularidade) {
   const alvo = document.getElementById("txt-meio");
   if (periodos.length < 2) {
     const ultimos = dados.formas
@@ -166,7 +216,7 @@ function renderNarrativaMeio(periodos, share) {
       .sort((a, b) => b.pct - a.pct);
     const [top1, top2] = ultimos;
     alvo.innerHTML = top1
-      ? `No trimestre ${periodos[0] || "—"}, considerando ${rotuloMetrica(participMetrica)}, o <strong>${top1.forma}</strong> `
+      ? `No(a) ${ROTULO_GRANULARIDADE[granularidade.codigo]} ${periodos[0] || "—"}, considerando ${rotuloMetrica(participMetrica)}, o <strong>${top1.forma}</strong> `
         + `liderava com ${fmtPct(top1.pct)}${top2 ? `, seguido por <strong>${top2.forma}</strong> (${fmtPct(top2.pct)})` : ""}.`
       : "Sem dados suficientes no período selecionado.";
     return;
@@ -214,11 +264,13 @@ function renderNarrativaFechamento(i0, i1) {
 // ---------- Gráfico 1: participação por trimestre (colunas empilhadas) ----------
 function renderGraficoParticipacao() {
   const [i0, i1] = periodoParaIndices(participPeriodo);
-  const { periodos, share } = agregarParticipacaoPorTrimestre(i0, i1, participMetrica);
+  const granularidade = escolherGranularidade(i1 - i0 + 1, maxColunasTela());
+  const { periodos, share } = agregarParticipacaoPorPeriodo(i0, i1, participMetrica, granularidade);
 
   document.getElementById("desc-participacao").textContent =
-    `Fatia de cada forma de pagamento no total de ${rotuloMetrica(participMetrica)} de cada trimestre `
-    + `(${periodos[0] || "—"}–${periodos[periodos.length - 1] || "—"}).`;
+    `Fatia de cada forma de pagamento no total de ${rotuloMetrica(participMetrica)} `
+    + `por ${ROTULO_GRANULARIDADE[granularidade.codigo]} `
+    + `(${periodos[0] || "—"} a ${periodos[periodos.length - 1] || "—"}).`;
 
   const ctx = document.getElementById("gParticipacaoAno");
   const datasets = dados.formas.map((f) => ({
@@ -266,7 +318,7 @@ function renderGraficoParticipacao() {
   });
 
   renderTabelaParticipacao(periodos, share);
-  renderNarrativaMeio(periodos, share);
+  renderNarrativaMeio(periodos, share, granularidade);
 }
 
 function renderTabelaParticipacao(periodos, share) {
@@ -392,6 +444,16 @@ function ligarFiltros() {
     evoPeriodo = codigo;
     cont.querySelectorAll(".pilula-btn").forEach((b) => b.classList.toggle("ativo", b.dataset.periodo === codigo));
     renderGraficoEvolucao();
+  });
+
+  // Recalcula a granularidade do gráfico de participação ao cruzar o breakpoint mobile/desktop.
+  let larguraAnterior = maxColunasTela();
+  window.addEventListener("resize", () => {
+    clearTimeout(window.__resizeParticipacaoTimer);
+    window.__resizeParticipacaoTimer = setTimeout(() => {
+      const atual = maxColunasTela();
+      if (atual !== larguraAnterior) { larguraAnterior = atual; renderGraficoParticipacao(); }
+    }, 200);
   });
 }
 
