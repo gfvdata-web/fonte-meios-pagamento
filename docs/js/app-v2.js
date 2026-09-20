@@ -15,6 +15,8 @@ const PERIODOS = [
   { codigo: "ytd", rotulo: "YTD" },
 ];
 
+if (window.ChartDataLabels) Chart.register(window.ChartDataLabels);
+
 let dados = null;
 let graficoParticipacao = null;
 let graficoEvolucao = null;
@@ -97,27 +99,37 @@ function cagrAA(serie, i0, i1) {
   return ((vn / v0) ** (1 / anos) - 1) * 100;
 }
 
-/** Agrega a série mensal por ano-calendário dentro de [i0, i1] e calcula a fatia (%) de cada forma por ano. */
-function agregarParticipacaoPorAno(i0, i1, campo) {
-  const anos = [];
-  const somaPorAno = {}; // ano -> {forma: soma}
+/** "2026-05" -> "2º/26" (trimestre + ano curto). */
+function fmtTrimestre(anoMes) {
+  const [a, m] = anoMes.split("-");
+  const tri = Math.floor((Number(m) - 1) / 3) + 1;
+  return `${tri}º/${a.slice(2)}`;
+}
+
+/** Agrega a série mensal por trimestre-calendário dentro de [i0, i1] e calcula a fatia (%) de cada forma por período. */
+function agregarParticipacaoPorTrimestre(i0, i1, campo) {
+  const periodos = [];
+  const somaPorPeriodo = {}; // chave "ano-Tn" -> {forma: soma}
   for (let k = i0; k <= i1; k++) {
-    const ano = dados.labels[k].slice(0, 4);
-    if (!somaPorAno[ano]) { somaPorAno[ano] = {}; anos.push(ano); }
+    const label = dados.labels[k];
+    const tri = Math.floor((Number(label.slice(5, 7)) - 1) / 3) + 1;
+    const chave = `${label.slice(0, 4)}-T${tri}`;
+    if (!somaPorPeriodo[chave]) { somaPorPeriodo[chave] = { rotulo: fmtTrimestre(label) }; periodos.push(chave); }
     dados.formas.forEach((f) => {
       const v = num(dados.series[f][campo][k]);
-      somaPorAno[ano][f] = (somaPorAno[ano][f] || 0) + v;
+      somaPorPeriodo[chave][f] = (somaPorPeriodo[chave][f] || 0) + v;
     });
   }
-  const share = {}; // forma -> [% por ano, na mesma ordem de `anos`]
+  const rotulos = periodos.map((p) => somaPorPeriodo[p].rotulo);
+  const share = {}; // forma -> [% por período, na mesma ordem de `periodos`]
   dados.formas.forEach((f) => { share[f] = []; });
-  anos.forEach((ano) => {
-    const total = dados.formas.reduce((s, f) => s + somaPorAno[ano][f], 0);
+  periodos.forEach((p) => {
+    const total = dados.formas.reduce((s, f) => s + somaPorPeriodo[p][f], 0);
     dados.formas.forEach((f) => {
-      share[f].push(total ? (somaPorAno[ano][f] / total) * 100 : null);
+      share[f].push(total ? (somaPorPeriodo[p][f] / total) * 100 : null);
     });
   });
-  return { anos, share };
+  return { periodos: rotulos, share };
 }
 
 // ---------- Renderização: cabeçalho ----------
@@ -145,21 +157,21 @@ function renderNarrativaAbertura() {
     + `a maior fatia entre as seis formas de pagamento acompanhadas nesta série.`;
 }
 
-function renderNarrativaMeio(anos, share) {
+function renderNarrativaMeio(periodos, share) {
   const alvo = document.getElementById("txt-meio");
-  if (anos.length < 2) {
+  if (periodos.length < 2) {
     const ultimos = dados.formas
       .map((f) => ({ forma: f, pct: share[f][share[f].length - 1] }))
       .filter((x) => x.pct != null)
       .sort((a, b) => b.pct - a.pct);
     const [top1, top2] = ultimos;
     alvo.innerHTML = top1
-      ? `Em ${anos[0] || "—"}, considerando ${rotuloMetrica(participMetrica)}, o <strong>${top1.forma}</strong> `
+      ? `No trimestre ${periodos[0] || "—"}, considerando ${rotuloMetrica(participMetrica)}, o <strong>${top1.forma}</strong> `
         + `liderava com ${fmtPct(top1.pct)}${top2 ? `, seguido por <strong>${top2.forma}</strong> (${fmtPct(top2.pct)})` : ""}.`
       : "Sem dados suficientes no período selecionado.";
     return;
   }
-  const iIni = 0, iFim = anos.length - 1;
+  const iIni = 0, iFim = periodos.length - 1;
   let maiorGanho = null, maiorPerda = null;
   dados.formas.forEach((f) => {
     const ini = share[f][iIni], fim = share[f][iFim];
@@ -170,7 +182,7 @@ function renderNarrativaMeio(anos, share) {
   });
   if (!maiorGanho) { alvo.textContent = "Sem dados suficientes no período selecionado."; return; }
   alvo.innerHTML =
-    `Entre ${anos[iIni]} e ${anos[iFim]}, a participação do <strong>${maiorGanho.forma}</strong> `
+    `Entre ${periodos[iIni]} e ${periodos[iFim]}, a participação do <strong>${maiorGanho.forma}</strong> `
     + `(em ${rotuloMetrica(participMetrica)}) passou de ${fmtPct(maiorGanho.ini)} para ${fmtPct(maiorGanho.fim)}`
     + (maiorPerda && maiorPerda.forma !== maiorGanho.forma
       ? `, enquanto o <strong>${maiorPerda.forma}</strong> perdeu espaço: de ${fmtPct(maiorPerda.ini)} para ${fmtPct(maiorPerda.fim)}.`
@@ -199,38 +211,42 @@ function renderNarrativaFechamento(i0, i1) {
       : ".");
 }
 
-// ---------- Gráfico 1: participação por ano ----------
+// ---------- Gráfico 1: participação por trimestre (colunas empilhadas) ----------
 function renderGraficoParticipacao() {
   const [i0, i1] = periodoParaIndices(participPeriodo);
-  const { anos, share } = agregarParticipacaoPorAno(i0, i1, participMetrica);
+  const { periodos, share } = agregarParticipacaoPorTrimestre(i0, i1, participMetrica);
 
   document.getElementById("desc-participacao").textContent =
-    `Fatia de cada forma de pagamento no total de ${rotuloMetrica(participMetrica)} de cada ano `
-    + `(${anos[0] || "—"}–${anos[anos.length - 1] || "—"}).`;
+    `Fatia de cada forma de pagamento no total de ${rotuloMetrica(participMetrica)} de cada trimestre `
+    + `(${periodos[0] || "—"}–${periodos[periodos.length - 1] || "—"}).`;
 
   const ctx = document.getElementById("gParticipacaoAno");
   const datasets = dados.formas.map((f) => ({
     label: f,
     data: share[f],
     backgroundColor: CORES[f],
-    borderRadius: 3,
-    maxBarThickness: 30,
-    categoryPercentage: 0.72,
-    barPercentage: 0.92,
+    maxBarThickness: 46,
+    datalabels: {
+      color: "#fff",
+      font: { family: "IBM Plex Sans", weight: 700, size: 10 },
+      textStrokeColor: "rgba(0,0,0,.55)",
+      textStrokeWidth: 3,
+      formatter: (v) => (v != null && v >= 6 ? `${Math.round(v)}%` : ""),
+    },
   }));
 
-  // Cada grupo (ano) precisa de espaço mínimo para as 6 barras ficarem legíveis;
-  // abaixo desse limite, a área do gráfico cresce e vira scroll horizontal em vez de espremer.
-  const PX_POR_GRUPO = 58;
+  // Cada trimestre é uma única coluna empilhada; abaixo desse limite de espaço por
+  // coluna, a área do gráfico cresce e vira scroll horizontal em vez de espremer.
+  const PX_POR_GRUPO = 34;
   const wrapper = document.getElementById("participacaoScrollInner");
-  const larguraMinima = anos.length * PX_POR_GRUPO;
+  const larguraMinima = periodos.length * PX_POR_GRUPO;
   const larguraContainer = wrapper.parentElement.clientWidth;
   wrapper.style.width = larguraMinima > larguraContainer ? `${larguraMinima}px` : "100%";
 
   if (graficoParticipacao) graficoParticipacao.destroy();
   graficoParticipacao = new Chart(ctx, {
     type: "bar",
-    data: { labels: anos, datasets },
+    data: { labels: periodos, datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
@@ -239,9 +255,9 @@ function renderGraficoParticipacao() {
         tooltip: { callbacks: { label: (i) => `${i.dataset.label}: ${fmtPct(i.parsed.y)}` } },
       },
       scales: {
-        x: { ticks: { color: cssVar("--texto-suave") }, grid: { display: false } },
+        x: { stacked: true, ticks: { color: cssVar("--texto-suave"), autoSkip: true, maxRotation: 0 }, grid: { display: false } },
         y: {
-          beginAtZero: true, max: 100,
+          stacked: true, beginAtZero: true, max: 100,
           ticks: { color: cssVar("--texto-suave"), callback: (v) => `${v}%` },
           grid: { color: cssVar("--borda") },
         },
@@ -249,14 +265,14 @@ function renderGraficoParticipacao() {
     },
   });
 
-  renderTabelaParticipacao(anos, share);
-  renderNarrativaMeio(anos, share);
+  renderTabelaParticipacao(periodos, share);
+  renderNarrativaMeio(periodos, share);
 }
 
-function renderTabelaParticipacao(anos, share) {
+function renderTabelaParticipacao(periodos, share) {
   const thead = document.querySelector("#tabela-participacao thead");
   const tbody = document.querySelector("#tabela-participacao tbody");
-  thead.innerHTML = `<tr><th>Forma</th>${anos.map((a) => `<th>${a}</th>`).join("")}</tr>`;
+  thead.innerHTML = `<tr><th>Forma</th>${periodos.map((p) => `<th>${p}</th>`).join("")}</tr>`;
   tbody.innerHTML = dados.formas.map((f) => `
     <tr><td>${pilulaForma(f)}</td>${share[f].map((v) => `<td>${fmtPct(v)}</td>`).join("")}</tr>
   `).join("");
@@ -295,6 +311,7 @@ function renderGraficoEvolucao() {
       plugins: {
         legend: { labels: { color: cssVar("--texto"), usePointStyle: true, boxWidth: 8, font: { family: "IBM Plex Sans" } } },
         tooltip: { callbacks: { label: (i) => `${i.dataset.label}: ${fmtCampo(campo, i.parsed.y)}` } },
+        datalabels: { display: false },
       },
       scales: {
         x: { ticks: { color: cssVar("--texto-suave"), maxTicksLimit: 12, autoSkip: true }, grid: { display: false } },

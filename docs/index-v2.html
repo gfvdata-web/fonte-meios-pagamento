@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/estilo-v2.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 </head>
 <body>
   <a class="switch-versao" href="index.html">← Voltar para a versão clássica (v1)</a>
@@ -53,9 +54,9 @@
         </div>
       </div>
       <div class="canvas-wrap-v2 canvas-participacao"><div class="canvas-scroll-inner" id="participacaoScrollInner"><canvas id="gParticipacaoAno"></canvas></div></div>
-      <p class="legenda-nota">Cada grupo de barras soma 100% — a altura de cada barra é a fatia daquela forma no ano.</p>
+      <p class="legenda-nota">Cada coluna soma 100% — o tamanho de cada segmento é a fatia daquela forma no trimestre.</p>
       <details class="tabela-expansivel">
-        <summary>Ver tabela de participação por ano (%)</summary>
+        <summary>Ver tabela de participação por trimestre (%)</summary>
         <div class="tabela-wrap"><table class="tabela tabela-densa" id="tabela-participacao"><thead></thead><tbody></tbody></table></div>
       </details>
     </article>
