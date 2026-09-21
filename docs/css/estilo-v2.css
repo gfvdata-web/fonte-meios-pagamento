@@ -1,7 +1,8 @@
 /* ===== Meios de Pagamento — v2 (experimental) =====
    Tema editorial: header verde-bandeira, fundo branco, serifada nos títulos/narrativa,
-   sans nos números/UI. Paleta categórica validada para contraste e daltonismo
-   (ver dataviz skill — checks em light e dark). */
+   sans nos números/UI. Paleta categórica por forma de pagamento (validada para
+   contraste e daltonismo — ver dataviz skill) vive só em js/app-v2.js (objeto CORES),
+   já que é sempre aplicada via JS nos gráficos e pílulas. */
 :root {
   --bg: #ffffff;
   --superficie: #ffffff;
@@ -15,14 +16,6 @@
   --positivo: #0d7a3e;
   --negativo: #b3261e;
   --raio: 10px;
-
-  /* Paleta categórica (validada: lightness band, chroma floor, CVD adjacente/normal-vision) */
-  --c-pix: #2a78d6;
-  --c-ted: #eb6834;
-  --c-boleto: #1baf7a;
-  --c-cheque: #eda100;
-  --c-tec: #e87ba4;
-  --c-doc: #4a3aa7;
 }
 
 @media (prefers-color-scheme: dark) {

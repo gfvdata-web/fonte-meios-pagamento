@@ -263,12 +263,16 @@ function renderNarrativaFechamento(i0, i1) {
       : ".");
 }
 
-/** Lista, abaixo do gráfico, os eventos catalogados que tocam a forma em foco e caem dentro do período visível. */
-function renderNarrativaEventos(i0, i1) {
-  const labelsPeriodoRaw = dados.labels.slice(i0, i1 + 1);
-  const relevantes = eventos
+/** Eventos catalogados que tocam a forma em foco e caem dentro do período visível (ordenados no tempo). */
+function eventosEmFoco(labelsPeriodoRaw) {
+  return eventos
     .filter((e) => e.formas.includes(focoForma) && labelsPeriodoRaw.includes(e.data))
     .sort((a, b) => a.data.localeCompare(b.data));
+}
+
+/** Lista, abaixo do gráfico, os eventos catalogados que tocam a forma em foco e caem dentro do período visível. */
+function renderNarrativaEventos(labelsPeriodoRaw) {
+  const relevantes = eventosEmFoco(labelsPeriodoRaw);
   const alvo = document.getElementById("eventos-linha-tempo");
   const titulo = `<p class="eventos-titulo">O que pode explicar a trajetória do ${focoForma}</p>`;
   if (!relevantes.length) {
@@ -286,7 +290,7 @@ function renderNarrativaEventos(i0, i1) {
     </div>`).join("");
 }
 
-// ---------- Gráfico 1: participação por trimestre (colunas empilhadas) ----------
+// ---------- Gráfico 1: participação por período, granularidade automática (colunas empilhadas) ----------
 function renderGraficoParticipacao() {
   const [i0, i1] = periodoParaIndices(participPeriodo);
   const granularidade = escolherGranularidade(i1 - i0 + 1, maxColunasTela());
@@ -364,20 +368,18 @@ function comAlpha(hex, alpha) {
 /** Linhas verticais tracejadas nos meses em que há evento catalogado para a forma em foco. */
 function construirAnotacoesEventos(labelsPeriodoRaw) {
   const anotacoes = {};
-  eventos
-    .filter((e) => e.formas.includes(focoForma) && labelsPeriodoRaw.includes(e.data))
-    .forEach((e, idx) => {
-      const posicao = labelsPeriodoRaw.indexOf(e.data);
-      anotacoes[`evento${idx}`] = {
-        type: "line", xMin: posicao, xMax: posicao,
-        borderColor: "rgba(20,24,26,.4)", borderWidth: 1, borderDash: [4, 4],
-        label: {
-          display: true, content: e.titulo, position: "start", rotation: -90,
-          backgroundColor: "rgba(20,24,26,.85)", color: "#fff",
-          font: { size: 9, family: "IBM Plex Sans" }, padding: 4,
-        },
-      };
-    });
+  eventosEmFoco(labelsPeriodoRaw).forEach((e, idx) => {
+    const posicao = labelsPeriodoRaw.indexOf(e.data);
+    anotacoes[`evento${idx}`] = {
+      type: "line", xMin: posicao, xMax: posicao,
+      borderColor: "rgba(20,24,26,.4)", borderWidth: 1, borderDash: [4, 4],
+      label: {
+        display: true, content: e.titulo, position: "start", rotation: -90,
+        backgroundColor: "rgba(20,24,26,.85)", color: "#fff",
+        font: { size: 9, family: "IBM Plex Sans" }, padding: 4,
+      },
+    };
+  });
   return anotacoes;
 }
 
@@ -432,7 +434,7 @@ function renderGraficoEvolucao() {
 
   renderTabelaEvolucao(i0, i1, campo);
   renderNarrativaFechamento(i0, i1);
-  renderNarrativaEventos(i0, i1);
+  renderNarrativaEventos(labelsPeriodoRaw);
 }
 
 /** Tabela-resumo por ano (soma para valor/quantidade, média para ticket médio) — evita centenas de linhas mensais. */
