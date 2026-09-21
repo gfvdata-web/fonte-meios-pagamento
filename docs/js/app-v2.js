@@ -4,16 +4,18 @@
 
 const ARQUIVO_DADOS = "dados/meios_pagamento_mensal.json";
 const ARQUIVO_EVENTOS = "dados/eventos_meios_pagamento.json";
-const CORES = {
-  Pix: "#2a78d6", TED: "#eb6834", Boleto: "#1baf7a",
-  Cheque: "#eda100", TEC: "#e87ba4", DOC: "#4a3aa7",
+// Cores por forma de pagamento: lidas de variáveis CSS (--c-pix etc., em css/estilo-v2.css)
+// para que claro/escuro usem paletas próprias sem duplicar essa lista em JS.
+const FORMA_VAR = {
+  Pix: "--c-pix", TED: "--c-ted", Boleto: "--c-boleto",
+  Cheque: "--c-cheque", TEC: "--c-tec", DOC: "--c-doc",
 };
+const corForma = (forma) => cssVar(FORMA_VAR[forma]);
 const PERIODOS = [
   { codigo: "tudo", rotulo: "Desde sempre" },
   { codigo: "10a", rotulo: "10A" },
   { codigo: "5a", rotulo: "5A" },
   { codigo: "1a", rotulo: "1A" },
-  { codigo: "ytd", rotulo: "YTD" },
 ];
 
 if (window.ChartDataLabels) Chart.register(window.ChartDataLabels);
@@ -61,7 +63,7 @@ const cssVar = (nome) => getComputedStyle(document.body).getPropertyValue(nome).
 const num = (x) => (x == null ? 0 : x);
 
 function pilulaForma(forma) {
-  return `<span class="pilula-forma"><span class="ponto-v2" style="background:${CORES[forma]}"></span>${forma}</span>`;
+  return `<span class="pilula-forma"><span class="ponto-v2" style="background:${corForma(forma)}"></span>${forma}</span>`;
 }
 
 /** Calcula e guarda em dados.series[forma].ticket a série de ticket médio (R$/transação). */
@@ -305,13 +307,14 @@ function renderGraficoParticipacao() {
   const datasets = dados.formas.map((f) => ({
     label: f,
     data: share[f],
-    backgroundColor: CORES[f],
+    backgroundColor: corForma(f),
     maxBarThickness: 46,
     datalabels: {
       color: "#fff",
       font: { family: "IBM Plex Sans", weight: 700, size: 10 },
-      textStrokeColor: "rgba(0,0,0,.55)",
-      textStrokeWidth: 3,
+      backgroundColor: "rgba(0,0,0,.28)",
+      borderRadius: 3,
+      padding: { top: 2, bottom: 2, left: 4, right: 4 },
       formatter: (v) => (v != null && v >= 6 ? `${Math.round(v)}%` : ""),
     },
   }));
@@ -333,8 +336,16 @@ function renderGraficoParticipacao() {
       maintainAspectRatio: false,
       plugins: {
         legend: { position: "bottom", labels: { color: cssVar("--texto"), usePointStyle: true, boxWidth: 8, font: { family: "IBM Plex Sans" } } },
-        tooltip: { callbacks: { label: (i) => `${i.dataset.label}: ${fmtPct(i.parsed.y)}` } },
+        tooltip: {
+          mode: "index",
+          intersect: false,
+          callbacks: {
+            title: (items) => items[0]?.label ?? "",
+            label: (i) => `${i.dataset.label}: ${fmtPct(i.parsed.y)}`,
+          },
+        },
       },
+      interaction: { mode: "index", intersect: false },
       scales: {
         x: { stacked: true, ticks: { color: cssVar("--texto-suave"), autoSkip: true, maxRotation: 0 }, grid: { display: false } },
         y: {
@@ -401,8 +412,8 @@ function renderGraficoEvolucao() {
     return {
       label: f,
       data: dados.series[f][campo].slice(i0, i1 + 1),
-      borderColor: emFoco ? CORES[f] : comAlpha(CORES[f], 0.25),
-      backgroundColor: CORES[f],
+      borderColor: emFoco ? corForma(f) : comAlpha(corForma(f), 0.25),
+      backgroundColor: corForma(f),
       borderWidth: emFoco ? 3 : 1.5,
       pointRadius: 0,
       pointHoverRadius: 4,
@@ -477,7 +488,7 @@ function montarPilulasForma() {
   const cont = document.getElementById("foco-forma");
   cont.innerHTML = dados.formas.map((f) => `
     <button class="pilula-btn pilula-btn-forma ${f === focoForma ? "ativo" : ""}" data-forma="${f}">
-      <span class="ponto-v2" style="background:${CORES[f]}"></span>${f}
+      <span class="ponto-v2" style="background:${corForma(f)}"></span>${f}
     </button>
   `).join("");
   cont.querySelectorAll(".pilula-btn-forma").forEach((btn) => {
@@ -536,7 +547,53 @@ function ligarFiltros() {
   });
 }
 
+// ---------- Tema claro/escuro ----------
+function temaEfetivoV2() {
+  const attr = document.documentElement.getAttribute("data-theme");
+  if (attr === "dark" || attr === "light") return attr;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function sincronizarSwitchTemaV2() {
+  const efetivo = temaEfetivoV2();
+  document.querySelectorAll("#tema-switch-v2 .tema-switch-v2__btn").forEach((botao) => {
+    const ativo = botao.dataset.tema === efetivo;
+    botao.classList.toggle("tema-switch-v2__btn--ativo", ativo);
+    botao.setAttribute("aria-pressed", ativo ? "true" : "false");
+  });
+}
+
+/** Canvas (Chart.js) não reage sozinho à troca de tema — CSS puro sim. Redesenha os gráficos e as pílulas com ponto colorido. */
+function rerenderizarAposTrocaTema() {
+  if (!dados) return;
+  montarPilulasForma();
+  renderGraficoParticipacao();
+  renderGraficoEvolucao();
+}
+
+function aplicarTemaV2(tema) {
+  document.documentElement.setAttribute("data-theme", tema);
+  try { localStorage.setItem("tema-v2", tema); } catch (e) { /* modo privado / storage bloqueado */ }
+  sincronizarSwitchTemaV2();
+  rerenderizarAposTrocaTema();
+}
+
+function configurarTemaV2() {
+  sincronizarSwitchTemaV2();
+  document.querySelectorAll("#tema-switch-v2 .tema-switch-v2__btn").forEach((botao) => {
+    botao.addEventListener("click", () => aplicarTemaV2(botao.dataset.tema));
+  });
+  // Sem escolha explícita, acompanha a mudança de tema do sistema.
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+    if (!document.documentElement.getAttribute("data-theme")) {
+      sincronizarSwitchTemaV2();
+      rerenderizarAposTrocaTema();
+    }
+  });
+}
+
 async function iniciar() {
+  configurarTemaV2();
   try {
     const resp = await fetch(ARQUIVO_DADOS);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);

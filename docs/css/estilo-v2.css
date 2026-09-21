@@ -4,6 +4,7 @@
    contraste e daltonismo — ver dataviz skill) vive só em js/app-v2.js (objeto CORES),
    já que é sempre aplicada via JS nos gráficos e pílulas. */
 :root {
+  color-scheme: light;
   --bg: #ffffff;
   --superficie: #ffffff;
   --borda: #e4e7e2;
@@ -16,10 +17,21 @@
   --positivo: #0d7a3e;
   --negativo: #b3261e;
   --raio: 10px;
+
+  --c-pix: #2a78d6;
+  --c-ted: #eb6834;
+  --c-boleto: #1baf7a;
+  --c-cheque: #eda100;
+  --c-tec: #e87ba4;
+  --c-doc: #4a3aa7;
 }
 
+/* Tokens do tema escuro — aplicados pela preferência do sistema (a menos que o
+   usuário force o claro com data-theme="light") ou pela escolha explícita
+   data-theme="dark" (ver .tema-switch-v2 / js/app-v2.js). */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
     --bg: #121513;
     --superficie: #191d1a;
     --borda: #2c322d;
@@ -37,6 +49,26 @@
     --c-tec: #d55181;
     --c-doc: #9085e9;
   }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #121513;
+  --superficie: #191d1a;
+  --borda: #2c322d;
+  --borda-forte: #e8ece9;
+  --texto: #e8ece9;
+  --texto-suave: #a6ada7;
+  --verde: #3fae72;
+  --verde-escuro: #6ec99a;
+  --verde-suave: #16281e;
+
+  --c-pix: #3987e5;
+  --c-ted: #d95926;
+  --c-boleto: #199e70;
+  --c-cheque: #c98500;
+  --c-tec: #d55181;
+  --c-doc: #9085e9;
 }
 
 * { box-sizing: border-box; }
@@ -95,11 +127,11 @@ main { padding: 40px 0 56px; }
 .narrativa { max-width: 68ch; margin: 0 auto 40px; padding: 0 6px; }
 .narrativa p {
   font-family: "Source Serif 4", Georgia, serif;
-  font-size: 1.3rem; line-height: 1.55; color: var(--texto);
+  font-size: 1.12rem; line-height: 1.55; color: var(--texto);
   margin: 0; font-weight: 400;
 }
 .narrativa p strong { font-weight: 700; color: var(--verde-escuro); }
-.narrativa-abertura p { font-size: 1.5rem; }
+.narrativa-abertura p { font-size: 1.28rem; }
 .narrativa-abertura, .narrativa-fechamento { text-align: left; }
 .narrativa::before {
   content: ""; display: block; width: 40px; height: 3px; background: var(--verde);
@@ -196,9 +228,26 @@ main { padding: 40px 0 56px; }
 }
 .switch-versao:hover { background: #1e293b; transform: translateY(-1px); }
 
+/* ---------- Switch de tema (claro/escuro) ---------- */
+.tema-switch-v2 {
+  position: fixed; top: 14px; right: 14px; z-index: 50;
+  display: flex; border: 1px solid var(--borda); border-radius: 999px;
+  overflow: hidden; background: var(--superficie); box-shadow: 0 2px 8px rgba(0,0,0,.18);
+}
+.tema-switch-v2__btn {
+  display: inline-flex; align-items: center; gap: .3rem; border: none;
+  background: transparent; color: var(--texto-suave); font: inherit; font-size: .78rem;
+  font-weight: 600; padding: 7px 13px; cursor: pointer; transition: background .15s ease, color .15s ease;
+}
+.tema-switch-v2__btn + .tema-switch-v2__btn { border-left: 1px solid var(--borda); }
+.tema-switch-v2__btn--ativo { background: var(--verde); color: #fff; }
+
 @media (max-width: 760px) {
   .cartao-v2-cabecalho { flex-direction: column; }
   .filtros-v2 { align-items: flex-start; width: 100%; }
   .switch-versao { top: auto; bottom: 14px; left: 14px; font-size: .72rem; padding: 7px 12px; }
-  .narrativa p, .narrativa-abertura p { font-size: 1.12rem; }
+  .tema-switch-v2 { top: auto; bottom: 14px; right: 14px; }
+  .tema-switch-v2__label { display: none; }
+  .tema-switch-v2__btn { padding: 8px 11px; }
+  .narrativa p, .narrativa-abertura p { font-size: 1rem; }
 }

@@ -40,5 +40,89 @@
     "descricao": "Nova modalidade permite pagamentos recorrentes (contas, assinaturas) autorizados uma única vez pelo pagador, sem repetir a ação todo mês.",
     "formas": ["Pix"],
     "fonte": "https://agenciabrasil.ebc.com.br/economia/noticia/2025-06/banco-central-anuncia-o-pix-automatico"
+  },
+  {
+    "data": "1985-04",
+    "titulo": "Criação do DOC",
+    "descricao": "O Banco Central regulamenta o Documento de Ordem de Crédito, que por quase 40 anos foi a principal forma de transferência interbancária de menor valor no país.",
+    "formas": ["DOC"],
+    "fonte": "https://normativos.bcb.gov.br/Lists/Normativos/Attachments/38966/C_Circ_1201_v2_L.pdf"
+  },
+  {
+    "data": "2002-04",
+    "titulo": "Criação da TED",
+    "descricao": "Dentro da reforma do Sistema de Pagamentos Brasileiro, o Banco Central institui a TED, sem limite de valor e com liquidação no mesmo dia, para substituir o DOC nas transferências de valores mais altos.",
+    "formas": ["TED"],
+    "fonte": "https://www.bcb.gov.br/pre/normativos/circ/2002/pdf/circ_3115_v3_L.pdf"
+  },
+  {
+    "data": "2006-12",
+    "titulo": "Regulamentação da TEC",
+    "descricao": "O Banco Central formaliza a Transferência Especial de Crédito, modalidade usada por empresas para pagar salários e benefícios a vários funcionários em uma única ordem, com limite de R$ 4.999,99 por crédito.",
+    "formas": ["TEC"],
+    "fonte": "https://normativos.bcb.gov.br/Lists/Normativos/Attachments/48167/Circ_3335_v1_O.pdf"
+  },
+  {
+    "data": "2011-05",
+    "titulo": "Truncagem: cheque passa a compensar por imagem",
+    "descricao": "A compensação de cheques deixa de depender do transporte físico do papel entre bancos: o documento fica retido na agência e circula como imagem digital certificada, agilizando a liquidação.",
+    "formas": ["Cheque"],
+    "fonte": "https://www.migalhas.com.br/quentes/131684/nova-circular-do-bc-institui-procedimento-digital-de-compensacao-de-cheques"
+  },
+  {
+    "data": "2012-10",
+    "titulo": "TED passa a exigir identificação completa",
+    "descricao": "O Banco Central determina que toda TED traga nome completo, CPF/CNPJ, banco, agência e conta do destinatário, reduzindo erros e dificultando fraudes.",
+    "formas": ["TED"],
+    "fonte": "https://www.migalhas.com.br/quentes/166789/bc-estabelece-novas-regras-para-transferencia-eletronica-disponivel"
+  },
+  {
+    "data": "2017-12",
+    "titulo": "Boleto vencido pode ser pago em qualquer banco",
+    "descricao": "Após implantação gradual por faixa de valor desde julho, a nova Plataforma de Cobrança da Febraban passa a aceitar o pagamento de qualquer boleto vencido em qualquer banco, sem precisar de 2ª via.",
+    "formas": ["Boleto"],
+    "fonte": "https://agenciabrasil.ebc.com.br/economia/noticia/2017-10/febraban-adia-para-2018-recebimento-de-boletos-vencidos-em-qualquer-banco"
+  },
+  {
+    "data": "2023-05",
+    "titulo": "Febraban anuncia o fim do DOC e da TEC",
+    "descricao": "Os bancos comunicam que vão encerrar as transferências via DOC e TEC até 29/02/2024, quase 40 anos após a criação do DOC, por causa da baixa utilização frente a TED e Pix.",
+    "formas": ["DOC", "TEC"],
+    "fonte": "https://portal.febraban.org.br/noticia/3926/pt-br/"
+  },
+  {
+    "data": "2023-10",
+    "titulo": "Compensação de cheques cai para 1 dia útil",
+    "descricao": "Nova resolução do Banco Central unifica e agiliza as regras da Compe: cheques de qualquer valor passam a ser compensados em até um dia útil, e não mais em até dois.",
+    "formas": ["Cheque"],
+    "fonte": "https://portal.febraban.org.br/noticia/3180/pt-br"
+  },
+  {
+    "data": "2024-01",
+    "titulo": "Boleto passa a liquidar no mesmo dia (D+0)",
+    "descricao": "Modernização liderada por Febraban e Núclea faz o valor pago em boleto até 13h30 ser repassado ao beneficiário no mesmo dia, resposta direta à concorrência do Pix.",
+    "formas": ["Boleto"],
+    "fonte": "https://assertech.com.br/blog/modernizacao-dos-boletos-bancarios-pagamentos-em-tempo-real-em-2024"
+  },
+  {
+    "data": "2025-02",
+    "titulo": "Boleto híbrido é oficializado",
+    "descricao": "Atualização da Resolução BCB nº 443 passa a permitir formalmente QR Code Pix nos boletos: o pagador escolhe pagar em D+1 pelo código de barras ou instantaneamente pelo Pix.",
+    "formas": ["Boleto"],
+    "fonte": "https://blog.tecnospeed.com.br/cluster-boleto-hibrido/"
+  },
+  {
+    "data": "2025-05",
+    "titulo": "TED segue à frente do Pix em valor movimentado",
+    "descricao": "Mesmo com o Pix liderando em número de transações, dados de 2024 mostram a TED movimentando R$ 43,1 trilhões contra R$ 26,9 trilhões do Pix, puxada por transferências de maior valor entre empresas.",
+    "formas": ["TED"],
+    "fonte": "https://mercadoeconsumo.com.br/19/05/2025/meios-de-pagamento/pix-lidera-em-numero-de-transacoes-em-2024-mas-ted-segue-na-frente-em-valores/"
+  },
+  {
+    "data": "2025-12",
+    "titulo": "Bradesco para de emitir talão de cheque",
+    "descricao": "Um dos maiores bancos do país anuncia que deixará de emitir novos talões de cheque para pessoas físicas e MEIs a partir de dezembro, símbolo do declínio do instrumento (0,5% dos pagamentos do país).",
+    "formas": ["Cheque"],
+    "fonte": "https://www.cnnbrasil.com.br/economia/negocios/bradesco-deixara-de-emitir-cheques-a-partir-de-dezembro/"
   }
 ]
