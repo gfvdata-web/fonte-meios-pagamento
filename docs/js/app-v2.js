@@ -370,6 +370,18 @@ function renderTabelaParticipacao(periodos, share) {
   `).join("");
 }
 
+/** Só para a métrica "quantidade": formas escondidas por padrão ao focar cada forma, já que a
+ *  escala de transações do Pix/TED esmaga visualmente as demais. A pessoa pode reexibi-las
+ *  clicando na legenda. */
+const OCULTAS_POR_FOCO_QUANTIDADE = {
+  Pix: [],
+  TED: ["Pix"],
+  Boleto: ["Pix"],
+  TEC: ["Pix", "TED", "Boleto"],
+  Cheque: ["Pix", "TED", "Boleto"],
+  DOC: ["Pix", "TED", "Boleto"],
+};
+
 /** #rrggbb -> "rgba(r,g,b,alpha)", para esmaecer as formas que não estão em foco. */
 function comAlpha(hex, alpha) {
   const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
@@ -385,7 +397,8 @@ function construirAnotacoesEventos(labelsPeriodoRaw) {
       type: "line", xMin: posicao, xMax: posicao,
       borderColor: "rgba(20,24,26,.4)", borderWidth: 1, borderDash: [4, 4],
       label: {
-        display: true, content: e.titulo, position: "start", rotation: -90,
+        display: true, content: e.titulo, position: "end", rotation: 0,
+        yAdjust: 10,
         backgroundColor: "rgba(20,24,26,.85)", color: "#fff",
         font: { size: 9, family: "IBM Plex Sans" }, padding: 4,
       },
@@ -407,6 +420,7 @@ function renderGraficoEvolucao() {
   const ctx = document.getElementById("gEvolucaoV2");
   // A forma em foco fica cheia e por cima; as demais ficam esmaecidas e ao fundo.
   const ordemDesenho = [...dados.formas.filter((f) => f !== focoForma), focoForma];
+  const ocultasPorPadrao = evoMetrica === "quantidade" ? (OCULTAS_POR_FOCO_QUANTIDADE[focoForma] || []) : [];
   const datasets = ordemDesenho.map((f) => {
     const emFoco = f === focoForma;
     return {
@@ -419,6 +433,7 @@ function renderGraficoEvolucao() {
       pointHoverRadius: 4,
       tension: 0.25,
       order: emFoco ? 0 : 1,
+      hidden: ocultasPorPadrao.includes(f),
     };
   });
 
