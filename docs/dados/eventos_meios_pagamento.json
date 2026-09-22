@@ -124,5 +124,68 @@
     "descricao": "Um dos maiores bancos do país anuncia que deixará de emitir novos talões de cheque para pessoas físicas e MEIs a partir de dezembro, símbolo do declínio do instrumento (0,5% dos pagamentos do país).",
     "formas": ["Cheque"],
     "fonte": "https://www.cnnbrasil.com.br/economia/negocios/bradesco-deixara-de-emitir-cheques-a-partir-de-dezembro/"
+  },
+  {
+    "data": "2013-05",
+    "titulo": "Nubank nasce sem oferecer talão de cheque",
+    "descricao": "O primeiro grande banco digital do país começa a operar já sem talão de cheque, mais de uma década antes de bancos tradicionais como o Bradesco tomarem a mesma decisão: a fuga do cheque começa pelas fintechs, não pelos bancões.",
+    "formas": ["Cheque"],
+    "fonte": "https://www.oficinadanet.com.br/nubank/54563-nubank-historia-curiosidades"
+  },
+  {
+    "data": "2019-10",
+    "titulo": "Fintechs parcelam boleto no cartão de crédito",
+    "descricao": "Startups como a Koin e, depois, ParceleJá (Cappta/Stone) e ABpix passam a parcelar boletos no cartão de crédito para quem não tem ou não quer usar cartão na compra — um jeito de o boleto sobreviver como crédito disfarçado, mesmo com a concorrência do cartão e, depois, do Pix.",
+    "formas": ["Boleto"],
+    "fonte": "https://www.em.com.br/app/noticia/economia/2019/10/18/internas_economia,1093781/fintech-se-reergue-com-pagamento-parcelado-com-boletos.shtml"
+  },
+  {
+    "data": "2020-06",
+    "titulo": "DOC bate seu recorde histórico às vésperas do fim",
+    "descricao": "Mesmo em decadência havia anos, o DOC atinge 29.095 mil transações no mês — o maior número de toda a série (2004-2024). Antes do Pix (lançado cinco meses depois), o DOC era uma das poucas opções baratas para transferências de menor valor, e a digitalização forçada pela pandemia parece ter empurrado gente para ele.",
+    "formas": ["DOC"],
+    "fonte": "https://cmsarquivos.febraban.org.br/Arquivos/documentos/PDF/pesquisa-febraban-relatorio.pdf"
+  },
+  {
+    "data": "2020-10",
+    "titulo": "TED bate recorde histórico de quantidade, um mês antes do Pix",
+    "descricao": "Puxada pela digitalização forçada da pandemia, a TED chega a 193.915 mil transações no mês — o maior número em toda a série iniciada em 2002. Um mês depois o Pix é lançado e a TED nunca mais retorna a esse patamar.",
+    "formas": ["TED"],
+    "fonte": "https://cmsarquivos.febraban.org.br/Arquivos/documentos/PDF/pesquisa-febraban-relatorio.pdf"
+  },
+  {
+    "data": "2021-01",
+    "titulo": "Pix ultrapassa a TED em número de transações",
+    "descricao": "Menos de três meses após o lançamento, o Pix soma 199.611 mil transações no mês contra 119.390 mil da TED — o cruzamento que inaugura a era em que o Pix lidera em quantidade, mas segue atrás em valor movimentado.",
+    "formas": ["Pix", "TED"],
+    "fonte": "https://tecnoblog.net/noticias/2021/01/21/pix-movimenta-mais-dinheiro-que-ted/"
+  },
+  {
+    "data": "2022-03",
+    "titulo": "Boleto bate recorde histórico de quantidade",
+    "descricao": "Com 380.680 mil boletos liquidados, março de 2022 é o maior mês em 24 anos de série — 14 meses depois do Pix já maduro. Março é pico sazonal recorrente do boleto quase todo ano (janela de pagamento de IPVA e IPTU), e o recorde de 2022 provavelmente soma essa sazonalidade à recuperação do varejo pós-pandemia.",
+    "formas": ["Boleto"],
+    "fonte": "https://99app.com/blog/99pay/iptu-e-ipva-como-organizar-as-contas-do-comeco-do-ano/"
+  },
+  {
+    "data": "2023-03",
+    "titulo": "Pix chega ao WhatsApp",
+    "descricao": "A Meta lança os Pagamentos no WhatsApp usando o Pix, inicialmente para pequenos negócios que usam o WhatsApp Business; a função chega às grandes empresas em junho de 2024.",
+    "formas": ["Pix"],
+    "fonte": "https://www.cnnbrasil.com.br/economia/negocios/whatsapp-pay-inclui-pix-e-expande-para-grandes-empresas/"
+  },
+  {
+    "data": "2023-11",
+    "titulo": "Compartilhamento obrigatório de dados de fraude no Pix",
+    "descricao": "Diante do aumento dos golpes — os prejuízos com fraude no Pix sobem 70% entre 2023 e 2024 —, o Banco Central passa a exigir que toda instituição financeira compartilhe dados de incidentes de fraude entre si.",
+    "formas": ["Pix"],
+    "fonte": "https://www.cnnbrasil.com.br/economia/financas/perdas-com-fraudes-no-pix-crescem-70-em-2024-mostram-dados-do-bc/"
+  },
+  {
+    "data": "2014-12",
+    "titulo": "O relógio do 13º salário: TEC dispara todo dezembro",
+    "descricao": "Recorde histórico da TEC, com 1.486 mil transações — 88% acima de novembro do mesmo ano. O padrão se repete sem exceção em todos os anos da série (2008-2023): dezembro supera novembro em 19% a 111%, porque a TEC é o instrumento usado por empresas para pagar folha e benefícios em lote, e dezembro é o mês do 13º salário.",
+    "formas": ["TEC"],
+    "fonte": "https://www.gov.br/trabalho-e-emprego/pt-br/noticias-e-conteudo/2025/novembro/decimo-terceiro-salario-entenda-o-direito-regras-e-prazos-de-pagamento"
   }
 ]
