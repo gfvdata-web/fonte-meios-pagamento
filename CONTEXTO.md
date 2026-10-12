@@ -46,6 +46,9 @@ fonte-meios-pagamento/
 ├── README.md
 ├── requirements.txt
 ├── run_pipeline.py             # orquestra as Etapas 2→5
+├── .github/
+│   ├── workflows/atualizacao-mensal.yml       # Etapa 7 — roda o pipeline todo dia 25
+│   └── scripts/descartar_mudancas_cosmeticas.py  # Etapa 7 — evita commit só de carimbo
 ├── src/
 │   ├── config.py               # caminhos + registro da fonte
 │   ├── coleta/meios_pagamento.py       # Etapa 2
@@ -102,7 +105,27 @@ unica alteracao que ela fez em arquivo existente foi o link "Explorar dados" na 
 | E | Exploração & pauta | `src/perfil/`, `docs/explorar.html` | bruto + tidy + auxiliares → perfil + pauta | ✅ |
 | 5 | Publicação de dados | `src/publicacao/` | tidy + métricas → JSON do front | ✅ |
 | 6 | Dashboard | `docs/` | JSON → site interativo | ✅ |
-| 7 | Documentação & deploy | `README.md`, GitHub Pages | — → site no ar | 🟡 |
+| 7 | Documentação & deploy | `README.md`, `.github/workflows/`, GitHub Pages | — → site no ar, atualizado todo mês | ✅ |
+
+**Etapa 7.** O GitHub Pages serve `docs/` da `main` (build legado, sem workflow de deploy).
+A atualização é automática: [`.github/workflows/atualizacao-mensal.yml`](.github/workflows/atualizacao-mensal.yml)
+roda `python run_pipeline.py` (Python 3.13) **no dia 25 de cada mês, 09:17 UTC**, e também
+sob demanda (`workflow_dispatch`). O dia 25 vem do calendário do BCB: os instrumentos mensais
+são atualizados "17 dias após o final do mês de referência" (portal de dados abertos,
+conjunto `estatisticas-meios-pagamentos`), e a folga cobre fim de semana e feriado.
+
+- **O que é commitado:** só os arquivos gerados — `docs/dados/meios_pagamento_mensal.{json,csv}`,
+  `docs/dados/perfil_meios_pagamento_mensal.json`, `dados/processados/meios_pagamento_mensal.csv`
+  e `docs/skill/meios-pagamento-bcb.zip`. `notas_*.json` e `eventos_*.json` são escritos à mão e
+  ficam de fora; se o pipeline os alterar, o workflow descarta a alteração e emite um aviso.
+- **Sem commit vazio:** `.github/scripts/descartar_mudancas_cosmeticas.py` restaura todo arquivo
+  cuja diferença seja só carimbo de execução (`meta.gerado_em`, o alerta "coletado em …" do
+  perfil, a data interna dos membros do zip, quebra de linha). Só sobra commit se o BCB trouxe
+  mês novo ou revisou dado.
+- **Disparo manual:** aba Actions → "Atualização mensal dos dados" → Run workflow, ou
+  `gh workflow run atualizacao-mensal.yml`.
+- **Cuidado:** em repositório público o GitHub desativa agendamentos após 60 dias sem atividade.
+  Se a série parar de mudar, reative em Actions.
 
 **Formato tidy (saída da Etapa 3):** colunas `ano_mes` (`YYYY-MM`), `forma_pagamento`,
 `quantidade`, `valor`. Segue a anatomia comum do projeto — **dimensões em linha, medidas em
@@ -125,4 +148,5 @@ coluna**, com `ano_mes` sempre como primeira dimensão.
 
 - [ ] Etapa 4: sazonalidade, médias móveis, testes de tendência.
 - [ ] Etapa 6: seletor de tema claro/escuro.
-- [ ] Etapa 7: automação de atualização agendada e melhorias de acessibilidade.
+- [x] Etapa 7: automação de atualização agendada (`.github/workflows/atualizacao-mensal.yml`).
+- [ ] Etapa 7: melhorias de acessibilidade.

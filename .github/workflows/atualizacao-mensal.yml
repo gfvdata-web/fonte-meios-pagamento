@@ -1,0 +1,88 @@
+# Etapa 7 — Atualização mensal dos dados publicados no GitHub Pages.
+#
+# Roda o pipeline completo (coleta na API do BCB → tratamento → perfil → publicação) e
+# commita na main só os arquivos gerados, e só quando o conteúdo mudou de verdade (dado
+# novo ou revisado) — não basta o carimbo `gerado_em`.
+#
+# Agenda: o BCB atualiza os instrumentos mensais (Pix, TED, TEC, Cheque, Boleto, DOC)
+# "17 dias após o final do mês de referência" (portal de dados abertos, conjunto
+# estatisticas-meios-pagamentos). Rodar no dia 25 dá ~1 semana de folga para fim de
+# semana, feriado ou atraso na divulgação.
+#
+# Disparo manual: aba Actions → "Atualização mensal dos dados" → Run workflow,
+# ou `gh workflow run atualizacao-mensal.yml`.
+name: Atualização mensal dos dados
+
+on:
+  schedule:
+    # 09:17 UTC (06:17 em Brasília) do dia 25. Minuto quebrado evita o pico da hora cheia.
+    - cron: "17 9 25 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: atualizacao-mensal
+  cancel-in-progress: false
+
+env:
+  # Só estes arquivos são commitados. As notas e os eventos de docs/dados/ são escritos
+  # à mão e ficam de fora de propósito.
+  ARQUIVOS_GERADOS: >-
+    docs/dados/meios_pagamento_mensal.json
+    docs/dados/meios_pagamento_mensal.csv
+    docs/dados/perfil_meios_pagamento_mensal.json
+    dados/processados/meios_pagamento_mensal.csv
+    docs/skill/meios-pagamento-bcb.zip
+  ARQUIVOS_A_MAO: >-
+    docs/dados/notas_meios_pagamento_mensal.json
+    docs/dados/eventos_meios_pagamento.json
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Rodar pipeline
+        run: python run_pipeline.py
+
+      - name: Proteger arquivos escritos à mão
+        run: |
+          if ! git diff --quiet -- $ARQUIVOS_A_MAO; then
+            echo "::warning::O pipeline alterou arquivos escritos à mão; alterações descartadas."
+            git diff --stat -- $ARQUIVOS_A_MAO
+            git checkout HEAD -- $ARQUIVOS_A_MAO
+          fi
+
+      - name: Descartar mudanças só de carimbo
+        id: mudancas
+        run: python .github/scripts/descartar_mudancas_cosmeticas.py $ARQUIVOS_GERADOS
+
+      - name: Commit e push
+        if: steps.mudancas.outputs.mudou == 'true'
+        run: |
+          fim=$(python -c "import json; print(json.load(open('docs/dados/meios_pagamento_mensal.json', encoding='utf-8'))['meta']['periodo']['fim'])")
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for arq in $ARQUIVOS_GERADOS; do
+            if [ -e "$arq" ]; then git add -- "$arq"; fi
+          done
+          git commit -m "dados: atualização mensal (série até $fim)"
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+          echo "Série atualizada até **$fim**." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Resumo sem mudança
+        if: steps.mudancas.outputs.mudou != 'true'
+        run: echo "Nenhum dado novo ou revisado no BCB; nada a commitar." >> "$GITHUB_STEP_SUMMARY"

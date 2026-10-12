@@ -31,6 +31,26 @@ Etapa 5 (publicação) e grava em `docs/dados/` o JSON que o dashboard consome e
 > sobrescreve. É onde ficam as armadilhas, os comparativos, o contexto externo pesquisado e a
 > pauta de visualizações que alimentam a página `explorar.html`.
 
+## Atualização automática
+
+O workflow [`.github/workflows/atualizacao-mensal.yml`](.github/workflows/atualizacao-mensal.yml)
+roda o pipeline **todo dia 25** (06:17 de Brasília) e commita na `main` os dados
+regenerados — o GitHub Pages republica o site em seguida. O BCB divulga cada mês ~17 dias
+depois do fim dele, então no dia 25 a série já traz o mês anterior.
+
+Só há commit quando o conteúdo muda de verdade (mês novo ou revisão do BCB); reexecuções
+que só renovariam o carimbo `gerado_em` não geram commit. Os arquivos escritos à mão
+(`notas_*.json` e `eventos_*.json`) nunca são commitados pelo workflow.
+
+**Para disparar manualmente** (ex.: o BCB divulgou antes do dia 25):
+
+- no GitHub: aba **Actions** → **Atualização mensal dos dados** → **Run workflow**; ou
+- pela linha de comando:
+
+```bash
+gh workflow run atualizacao-mensal.yml
+```
+
 Para ver o dashboard localmente:
 
 ```bash
