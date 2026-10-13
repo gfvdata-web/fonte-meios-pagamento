@@ -124,9 +124,9 @@ class TestCarregarDados(unittest.TestCase):
 
     def test_arquivo_json_nos_dois_formatos(self):
         with tempfile.TemporaryDirectory() as tmp:
-            # JSON que seja só uma lista (sem "value"/"registros") hoje quebra com AttributeError
-            # em carregar(); o código sugere que deveria ser aceito. Não coberto até ser corrigido.
-            for nome, corpo in (("api.json", {"value": self.api}), ("bruto.json", {"registros": self.api})):
+            # "value" (API), "registros" (bruto do pipeline) ou uma lista simples de registros
+            for nome, corpo in (("api.json", {"value": self.api}), ("bruto.json", {"registros": self.api}),
+                                ("lista.json", self.api)):
                 arq = Path(tmp) / nome
                 arq.write_text(json.dumps(corpo), encoding="utf-8")
                 linhas, _ = cd.carregar("auto", str(arq))

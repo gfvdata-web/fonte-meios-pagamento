@@ -257,8 +257,7 @@ class TestNotasLidasPelaExploracao(unittest.TestCase):
             self.assertIn(p["status"], filtros, f"{p['id']}: status sem botão de filtro")
             self.assertIn(f".selo-{p['esforco']}", self.css, f"{p['id']}: esforço sem estilo de selo")
             self.assertIn(f".selo-{p['status']}", self.css, f"{p['id']}: status sem estilo de selo")
-            # prioridade (alta/media/baixa) usa selo-alta/-media/-baixa, que o estilo.css não define:
-            # o selo aparece sem cor. É cosmético e o css é compartilhado com outras fontes; não testado.
+            self.assertIn(f".selo-{p['prioridade']}", self.css, f"{p['id']}: prioridade sem estilo de selo")
 
     def test_urls_externas_bem_formadas(self):
         for c in self.n["contexto_externo"]:

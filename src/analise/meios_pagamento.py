@@ -24,13 +24,25 @@ def _carregar_tidy(slug: str) -> pd.DataFrame:
     return df
 
 
-def _cagr_aa(serie: pd.Series, meses_por_ano: int = 12) -> float | None:
-    """CAGR anual entre o primeiro e o último valor positivo da série (ordenada asc)."""
+def _indice_mes(ano_mes: str) -> int:
+    ano, mes = str(ano_mes).split("-")
+    return int(ano) * 12 + int(mes)
+
+
+def _cagr_aa(serie: pd.Series, ano_mes: pd.Series | None = None, meses_por_ano: int = 12) -> float | None:
+    """CAGR anual entre o primeiro e o último valor positivo da série (ordenada asc).
+
+    O intervalo vem dos meses reais (`ano_mes`, alinhado à série); sem ele, assume série
+    contínua e usa a posição — errado se houver lacuna de meses.
+    """
     positivos = serie[serie > 0]
     if len(positivos) < 2:
         return None
     v0, vn = positivos.iloc[0], positivos.iloc[-1]
-    n_meses = positivos.index[-1] - positivos.index[0]
+    if ano_mes is None:
+        n_meses = positivos.index[-1] - positivos.index[0]
+    else:
+        n_meses = _indice_mes(ano_mes[positivos.index[-1]]) - _indice_mes(ano_mes[positivos.index[0]])
     anos = n_meses / meses_por_ano
     if anos <= 0 or v0 <= 0:
         return None
@@ -97,7 +109,7 @@ def analisar(slug: str = SLUG) -> dict:
             "qtd_ultimo": qtd_ult,
             "ticket_medio_ultimo_rs": ticket,
             "yoy_valor_pct": _yoy_pct(valor),
-            "cagr_valor_aa_pct": (lambda c: c * 100 if c is not None else None)(_cagr_aa(valor)),
+            "cagr_valor_aa_pct": (lambda c: c * 100 if c is not None else None)(_cagr_aa(valor, g["ano_mes"])),
         })
         estatisticas[forma] = {"valor": _desc(valor), "quantidade": _desc(qtd)}
         series[forma] = {

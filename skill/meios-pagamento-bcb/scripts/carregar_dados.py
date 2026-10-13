@@ -95,7 +95,8 @@ def carregar(origem: str, arquivo: str | None) -> tuple[list[dict], str]:
         texto = caminho.read_text(encoding="utf-8")
         if caminho.suffix.lower() == ".json":
             corpo = json.loads(texto)
-            registros = corpo.get("value") or corpo.get("registros") or corpo
+            # objeto da API ("value"), bruto do pipeline ("registros") ou lista simples de registros
+            registros = corpo if isinstance(corpo, list) else (corpo.get("value") or corpo.get("registros") or corpo)
             return _de_wide(registros), f"arquivo {caminho.name}"
         return _de_csv(texto), f"arquivo {caminho.name}"
 

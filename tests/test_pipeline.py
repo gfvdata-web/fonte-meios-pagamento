@@ -191,6 +191,12 @@ class TestAnalise(unittest.TestCase):
         self.assertAlmostEqual(analise._cagr_aa(pd.Series([100.0] + [0.0] * 11 + [200.0])), 1.0)
         self.assertIsNone(analise._cagr_aa(pd.Series([0.0, 0.0, 5.0])))   # só um positivo
         self.assertIsNone(analise._cagr_aa(pd.Series([0.0, 0.0])))
+        # com lacuna na série, os anos saem dos meses reais (ano_mes), não da posição:
+        # jan/2020 -> jan/2022 = 24 meses = 2 anos, mesmo com só 3 linhas
+        meses = pd.Series(["2020-01", "2021-01", "2022-01"])
+        self.assertAlmostEqual(analise._cagr_aa(pd.Series([100.0, 150.0, 400.0]), meses), 1.0)
+        # a posição daria 2 "meses" (0,2 anos) e um CAGR absurdo
+        self.assertAlmostEqual(analise._cagr_aa(pd.Series([100.0, 150.0, 400.0])), 4.0 ** 6 - 1)
         self.assertIsNone(analise._yoy_pct(pd.Series(range(1, 13))))       # menos de 13 meses
         self.assertIsNone(analise._yoy_pct(pd.Series([0.0] + [1.0] * 12)))  # base zero
         self.assertAlmostEqual(analise._yoy_pct(pd.Series([100.0] + [0.0] * 11 + [150.0])), 50.0)
