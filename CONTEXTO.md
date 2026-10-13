@@ -57,15 +57,20 @@ fonte-meios-pagamento/
 │   ├── brutos/                 # resposta crua da API (regenerável; fora do git)
 │   └── processados/            # CSV tidy
 ├── docs/                       # Etapas 6 e E — site publicado
-│   ├── index.html                      # Etapa 6 — painel
+│   ├── index.html                      # Etapa 6 — painel (ex-v2; a v1 só existe no histórico do git)
 │   ├── explorar.html                   # Etapa E — perfil + pauta analitica
-│   ├── css/estilo.css
-│   ├── js/app.js
+│   ├── css/estilo-v2.css               # estilo do painel
+│   ├── css/estilo.css                  # estilo do explorar.html
+│   ├── js/app-v2.js                    # painel
 │   ├── js/explorar.js
+│   ├── skill/meios-pagamento-bcb.zip   # Etapa 5 (gerado) — skill do Claude para download
 │   └── dados/
 │       ├── meios_pagamento_mensal.json         # Etapa 5 (gerado)
+│       ├── meios_pagamento_mensal.csv          # Etapa 5 (gerado) — cópia pública do tidy
 │       ├── perfil_meios_pagamento_mensal.json  # Etapa E (gerado)
+│       ├── eventos_meios_pagamento.json        # marcos da linha do tempo (a mao)
 │       └── notas_meios_pagamento_mensal.json   # Etapa E (a mao, nunca sobrescrito)
+├── skill/meios-pagamento-bcb/  # fonte da skill do Claude (SKILL.md, scripts/, references/)
 └── catalogo/fonte.md           # Etapa 1 — dicionário de dados
 ```
 

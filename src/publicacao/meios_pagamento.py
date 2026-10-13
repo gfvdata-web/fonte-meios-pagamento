@@ -2,11 +2,12 @@
 
 Reúne a saída da análise (Etapa 4) com metadados da fonte e grava um JSON
 compacto em ``docs/dados/meios_pagamento_mensal.json``, consumido pelo
-dashboard (Etapa 6).
+dashboard (Etapa 6). Copia também o CSV tidy para ``docs/dados/``.
 """
 from __future__ import annotations
 
 import json
+import shutil
 from datetime import datetime, timezone
 
 from src import config
@@ -41,6 +42,12 @@ def publicar(slug: str = SLUG) -> dict:
     destino = config.DIR_PUBLICADOS / f"{slug}.json"
     destino.write_text(json.dumps(pacote, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"[publicacao] JSON do dashboard salvo em {destino}")
+
+    # CSV tidy também vai para o site: é a origem alternativa da skill do Claude
+    # e o link de download para quem quiser os dados prontos.
+    csv_publico = config.DIR_PUBLICADOS / f"{slug}.csv"
+    shutil.copyfile(config.DIR_PROCESSADOS / f"{slug}.csv", csv_publico)
+    print(f"[publicacao] CSV tidy publicado em {csv_publico}")
     return pacote
 
 

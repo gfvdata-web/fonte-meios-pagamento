@@ -6,6 +6,8 @@ Boleto, DOC), coletados da API Olinda/OData do Banco Central.
 
 **Painel publicado:** https://gfvdata-web.github.io/fonte-meios-pagamento/
 **Explorar os dados (Etapa E):** https://gfvdata-web.github.io/fonte-meios-pagamento/explorar.html
+**Skill do Claude:** https://gfvdata-web.github.io/fonte-meios-pagamento/skill/meios-pagamento-bcb.zip
+— ensina o Claude a baixar a série atualizada e analisá-la sem cair nas armadilhas da fonte.
 
 > 📄 Organização do repositório e etapas do pipeline: **[CONTEXTO.md](CONTEXTO.md)**
 > 📚 Dicionário de dados da fonte: **[catalogo/fonte.md](catalogo/fonte.md)**
@@ -48,6 +50,7 @@ python -m http.server 8000 --directory docs
 | `src/perfil/` | E | Perfil das tabelas → `docs/dados/perfil_*.json` |
 | `src/publicacao/` | 5 | JSON → `docs/dados/` |
 | `docs/index.html` | 6 | Dashboard (site publicado) |
+| `skill/meios-pagamento-bcb/` | 5 | Skill do Claude; empacotada em `docs/skill/meios-pagamento-bcb.zip` |
 | `docs/explorar.html` | E | Perfil das tabelas + pauta analítica |
 
 ## Licença dos dados

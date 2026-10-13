@@ -14,6 +14,7 @@ from src.coleta import meios_pagamento as coleta
 from src.tratamento import meios_pagamento as tratamento
 from src.perfil import meios_pagamento as perfil
 from src.publicacao import meios_pagamento as publicacao
+from src.publicacao import skill
 
 
 def rodar(sem_coleta: bool = False, sem_perfil: bool = False) -> None:
@@ -34,6 +35,7 @@ def rodar(sem_coleta: bool = False, sem_perfil: bool = False) -> None:
         perfil.perfilar(config.SLUG)
 
     publicacao.publicar(config.SLUG)
+    skill.empacotar()
     print("=== Pipeline concluído com sucesso ===")
 
 
