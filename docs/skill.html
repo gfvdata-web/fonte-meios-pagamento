@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skill Claude · Meios de Pagamento no Brasil</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/estilo-v2.css" />
+  <script>try{var t=localStorage.getItem("tema-v2");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+</head>
+<body>
+  <div class="tema-switch-v2" id="tema-switch-v2" role="group" aria-label="Tema da página">
+    <button type="button" class="tema-switch-v2__btn" data-tema="light" aria-pressed="false">
+      <span aria-hidden="true">☀️</span><span class="tema-switch-v2__label">Claro</span>
+    </button>
+    <button type="button" class="tema-switch-v2__btn" data-tema="dark" aria-pressed="false">
+      <span aria-hidden="true">🌙</span><span class="tema-switch-v2__label">Escuro</span>
+    </button>
+  </div>
+
+  <header class="cabecalho-v2">
+    <div class="conteiner">
+      <p class="sobrelinha">Dados Abertos · Banco Central do Brasil</p>
+      <h1>Pergunte ao Claude</h1>
+      <p class="subtitulo">Uma skill que ensina o Claude a analisar a série oficial de meios de pagamento do jeito certo.</p>
+      <nav class="nav-paineis" aria-label="Páginas do projeto">
+        <a href="index.html">Painel</a>
+        <a href="skill.html" aria-current="page">Skill Claude</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="conteiner">
+
+    <section class="narrativa narrativa-abertura">
+      <p>O painel foi construído com a ajuda do Claude. A mesma preparação está empacotada numa <strong>skill</strong>: com ela, o Claude baixa a série atualizada do Banco Central, evita as armadilhas da fonte e situa os números nos marcos históricos.</p>
+    </section>
+
+    <article class="cartao-v2 cartao-ia">
+      <p class="rotulo-secao">Em três passos</p>
+      <h2>Como usar</h2>
+
+      <ol class="passos-skill">
+        <li>
+          <h3>Baixe o pacote</h3>
+          <p>Um arquivo .zip com as instruções e um script de carga. Não contém dados: a série é baixada na hora, sempre atualizada.</p>
+          <a class="botao-download" href="skill/meios-pagamento-bcb.zip" download>Baixar a skill (.zip, 16 KB)</a>
+        </li>
+        <li>
+          <h3>Instale no Claude</h3>
+          <p><strong>No claude.ai:</strong> vá em <em>Configurações → Capacidades → Skills</em> e envie o zip, sem descompactar. A execução de código precisa estar ativada.</p>
+          <p><strong>No Claude Code:</strong> descompacte o zip e coloque a pasta <code>meios-pagamento-bcb</code> em <code>~/.claude/skills/</code>.</p>
+        </li>
+        <li>
+          <h3>Pergunte</h3>
+          <p>Não precisa chamar a skill pelo nome. O Claude a usa sozinho quando o assunto é Pix, TED, boleto, cheque, DOC ou TEC. Alguns exemplos:</p>
+          <ul class="exemplos-skill">
+            <li>"O Pix já substituiu o boleto? Mostre em quantidade e em valor."</li>
+            <li>"Como evoluiu o ticket médio da TED, corrigido pela inflação?"</li>
+            <li>"Faça um gráfico da queda do cheque desde 2002."</li>
+          </ul>
+        </li>
+      </ol>
+    </article>
+
+    <article class="cartao-v2">
+      <p class="rotulo-secao">O que vem no pacote</p>
+      <h2>Por que usar a skill em vez de só o CSV</h2>
+      <ul class="passos-ia">
+        <li><strong>Unidades:</strong> quantidade em milhares e valor em R$ milhões. Sem esse cuidado, o ticket médio sai mil vezes menor.</li>
+        <li><strong>Zeros que significam "não existia":</strong> o Pix antes de nov/2020 e o DOC depois do fim não entram em médias nem em crescimento.</li>
+        <li><strong>Inflação:</strong> os valores são nominais. A skill deflaciona pelo IPCA quando a comparação atravessa anos.</li>
+        <li><strong>Marcos históricos:</strong> lançamento do Pix, fim do DOC, Pix Automático e outros, para situar cada mudança na série.</li>
+      </ul>
+      <p class="legenda-nota">Prefere outra ferramenta? Os dados tratados estão em <a href="dados/meios_pagamento_mensal.csv" download>meios_pagamento_mensal.csv</a> (quantidade em milhares de transações, valor em R$ milhões, nominal).</p>
+    </article>
+
+  </main>
+
+  <footer class="rodape-v2">
+    <div class="conteiner">
+      <p>Fonte: Banco Central do Brasil — estatísticas de meios de pagamento (dados abertos).</p>
+      <p class="rodape-obs">Projeto de estudo. A skill é distribuída como está, sem garantias; confira os números na fonte oficial.</p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var raiz = document.documentElement;
+      var midia = window.matchMedia("(prefers-color-scheme: dark)");
+      function efetivo() {
+        var attr = raiz.getAttribute("data-theme");
+        return attr === "dark" || attr === "light" ? attr : (midia.matches ? "dark" : "light");
+      }
+      function sincronizar() {
+        var tema = efetivo();
+        document.querySelectorAll("#tema-switch-v2 .tema-switch-v2__btn").forEach(function (botao) {
+          var ativo = botao.dataset.tema === tema;
+          botao.classList.toggle("tema-switch-v2__btn--ativo", ativo);
+          botao.setAttribute("aria-pressed", ativo ? "true" : "false");
+        });
+      }
+      document.querySelectorAll("#tema-switch-v2 .tema-switch-v2__btn").forEach(function (botao) {
+        botao.addEventListener("click", function () {
+          raiz.setAttribute("data-theme", botao.dataset.tema);
+          try { localStorage.setItem("tema-v2", botao.dataset.tema); } catch (e) { /* storage bloqueado */ }
+          sincronizar();
+        });
+      });
+      midia.addEventListener("change", function () { if (!raiz.getAttribute("data-theme")) sincronizar(); });
+      sincronizar();
+    })();
+  </script>
+</body>
+</html>

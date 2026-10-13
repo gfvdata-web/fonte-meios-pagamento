@@ -234,6 +234,29 @@ main { padding: 40px 0 56px; }
 .passos-ia { margin: 16px 0 12px; padding-left: 1.3rem; max-width: 64ch; line-height: 1.6; }
 .passos-ia li + li { margin-top: 6px; }
 
+/* ---------- Página da skill ---------- */
+.passos-skill { list-style: none; counter-reset: passo; margin: 22px 0 0; padding: 0; max-width: 68ch; }
+.passos-skill > li {
+  counter-increment: passo; position: relative; padding: 0 0 22px 52px;
+}
+.passos-skill > li + li { border-top: 1px solid var(--borda); padding-top: 20px; }
+.passos-skill > li::before {
+  content: counter(passo); position: absolute; left: 0; top: 0;
+  width: 34px; height: 34px; border-radius: 50%; background: var(--verde); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .95rem;
+}
+.passos-skill > li + li::before { top: 20px; }
+.passos-skill h3 { margin: 4px 0 6px; font-size: 1.05rem; font-weight: 600; }
+.passos-skill p { margin: 0 0 8px; line-height: 1.6; }
+.cartao-ia a.botao-download {
+  display: inline-block; margin-top: 6px; padding: 10px 18px; border-radius: 999px;
+  background: var(--verde); color: #fff; text-decoration: none; font-weight: 600; font-size: .9rem;
+  transition: background .15s ease;
+}
+.cartao-ia a.botao-download:hover { background: var(--verde-escuro); }
+.exemplos-skill { margin: 6px 0 0; padding-left: 1.2rem; color: var(--texto-suave); font-style: italic; }
+.exemplos-skill li + li { margin-top: 4px; }
+
 @media (max-width: 760px) {
   .cartao-v2-cabecalho { flex-direction: column; }
   .filtros-v2 { align-items: flex-start; width: 100%; }
