@@ -1,4 +1,4 @@
-/* ===== Meios de Pagamento — v2 (experimental) =====
+/* ===== Meios de Pagamento — painel =====
    Tema editorial: header verde-bandeira, fundo branco, serifada nos títulos/narrativa,
    sans nos números/UI. Paleta categórica por forma de pagamento (validada para
    contraste e daltonismo — ver dataviz skill) vive só em js/app-v2.js (objeto CORES),
@@ -91,12 +91,6 @@ h1, h2, .fonte-editorial { font-family: "Source Serif 4", Georgia, "Times New Ro
   color: #fff;
   padding: 44px 0 36px;
   border-bottom: 4px solid var(--verde-escuro);
-}
-.selo-v2 {
-  display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .06em;
-  text-transform: uppercase; background: rgba(255,255,255,.16);
-  border: 1px solid rgba(255,255,255,.4); border-radius: 999px;
-  padding: 3px 10px; margin: 0 0 14px;
 }
 .cabecalho-v2 .sobrelinha {
   text-transform: uppercase; letter-spacing: .1em; font-size: .76rem;
@@ -218,15 +212,6 @@ main { padding: 40px 0 56px; }
 .rodape-v2 p { margin: 4px 0; }
 
 /* ---------- Switch temporário v1/v2 ---------- */
-.switch-versao {
-  position: fixed; top: 14px; left: 14px; z-index: 50;
-  background: #0f172a; color: #fff; text-decoration: none;
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: .78rem; font-weight: 600; letter-spacing: .01em;
-  padding: 8px 14px; border-radius: 999px; box-shadow: 0 4px 14px rgba(0,0,0,.25);
-  transition: transform .15s ease, background .15s ease;
-}
-.switch-versao:hover { background: #1e293b; transform: translateY(-1px); }
 
 /* ---------- Switch de tema (claro/escuro) ---------- */
 .tema-switch-v2 {
@@ -242,10 +227,16 @@ main { padding: 40px 0 56px; }
 .tema-switch-v2__btn + .tema-switch-v2__btn { border-left: 1px solid var(--borda); }
 .tema-switch-v2__btn--ativo { background: var(--verde); color: #fff; }
 
+/* ---------- Kit para IA (skill do Claude) ---------- */
+.cartao-ia { border-left: 4px solid var(--verde); }
+.cartao-ia a { color: var(--verde-escuro); font-weight: 600; }
+.cartao-ia code { font-size: .85em; background: var(--verde-suave); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+.passos-ia { margin: 16px 0 12px; padding-left: 1.3rem; max-width: 64ch; line-height: 1.6; }
+.passos-ia li + li { margin-top: 6px; }
+
 @media (max-width: 760px) {
   .cartao-v2-cabecalho { flex-direction: column; }
   .filtros-v2 { align-items: flex-start; width: 100%; }
-  .switch-versao { top: auto; bottom: 14px; left: 14px; font-size: .72rem; padding: 7px 12px; }
   .tema-switch-v2 { top: auto; bottom: 14px; right: 14px; }
   .tema-switch-v2__label { display: none; }
   .tema-switch-v2__btn { padding: 8px 11px; }

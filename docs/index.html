@@ -3,20 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Meios de Pagamento no Brasil — Painel Analítico</title>
-  <link rel="stylesheet" href="css/estilo.css" />
+  <title>Meios de Pagamento no Brasil</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/estilo-v2.css" />
+  <script>try{var t=localStorage.getItem("tema-v2");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-  <script data-goatcounter="https://gfvdata.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 </head>
 <body>
-  <a class="switch-versao" href="index-v2.html">Testar nova versão (v2) →</a>
+  <div class="tema-switch-v2" id="tema-switch-v2" role="group" aria-label="Tema da página">
+    <button type="button" class="tema-switch-v2__btn" data-tema="light" aria-pressed="false">
+      <span aria-hidden="true">☀️</span><span class="tema-switch-v2__label">Claro</span>
+    </button>
+    <button type="button" class="tema-switch-v2__btn" data-tema="dark" aria-pressed="false">
+      <span aria-hidden="true">🌙</span><span class="tema-switch-v2__label">Escuro</span>
+    </button>
+  </div>
 
-  <header class="cabecalho">
+  <header class="cabecalho-v2">
     <div class="conteiner">
-      <p class="sobrelinha">Banco Central do Brasil · Dados Abertos</p>
-      <h1>Meios de Pagamento no Brasil</h1>
-      <p class="subtitulo" id="descricao-fonte">Quantidade e valor de movimentação por mês e forma de pagamento.</p>
-      <p class="meta-info" id="meta-info">Carregando…</p>
+      <p class="sobrelinha">Dados Abertos · Banco Central do Brasil</p>
+      <h1>Como o Brasil paga</h1>
+      <p class="subtitulo">A composição dos meios de pagamento mudou radicalmente em duas décadas.</p>
       <nav class="nav-paineis" aria-label="Painéis do projeto">
         <a href="index.html" aria-current="page">Painel</a>
         <a href="explorar.html">Explorar dados</a>
@@ -28,110 +39,97 @@
   </header>
 
   <main class="conteiner">
-    <!-- Controle de métrica -->
-    <section class="controles" aria-label="Seleção de métrica">
-      <span class="controles-rotulo">Métrica:</span>
-      <div class="alternador" role="tablist">
-        <button class="alt-btn ativo" data-metrica="valor" role="tab">Valor (R$)</button>
-        <button class="alt-btn" data-metrica="quantidade" role="tab">Quantidade</button>
-        <button class="alt-btn" data-metrica="ticket" role="tab">Ticket médio (R$)</button>
-      </div>
+
+    <!-- Abertura narrativa -->
+    <section class="narrativa narrativa-abertura">
+      <p id="txt-abertura">Carregando a série histórica…</p>
     </section>
 
-    <!-- KPIs -->
-    <section class="kpis" id="kpis" aria-label="Indicadores-chave"></section>
+    <!-- Gráfico 1: participação por período, granularidade automática (colunas empilhadas) -->
+    <article class="cartao-v2">
+      <div class="cartao-v2-cabecalho">
+        <div>
+          <p class="rotulo-secao">Participação por período</p>
+          <h2>Quem ganhou espaço, quem perdeu</h2>
+          <p class="cartao-v2-desc" id="desc-participacao">Fatia de cada forma de pagamento no total de cada período.</p>
+        </div>
+        <div class="filtros-v2">
+          <div class="pilulas" role="tablist" aria-label="Métrica do gráfico de participação">
+            <button class="pilula-btn ativo" data-metrica-part="quantidade" role="tab">Quantidade</button>
+            <button class="pilula-btn" data-metrica-part="valor" role="tab">Valor</button>
+          </div>
+          <div class="pilulas" role="tablist" aria-label="Período do gráfico de participação" id="periodo-participacao"></div>
+        </div>
+      </div>
+      <div class="canvas-wrap-v2 canvas-participacao"><div class="canvas-scroll-inner" id="participacaoScrollInner"><canvas id="gParticipacaoAno"></canvas></div></div>
+      <p class="legenda-nota">Cada coluna soma 100% — o tamanho de cada segmento é a fatia daquela forma no período. A granularidade do eixo (mês/trimestre/semestre/ano) se ajusta automaticamente ao intervalo e ao tamanho da tela.</p>
+      <details class="tabela-expansivel">
+        <summary>Ver tabela de participação por período (%)</summary>
+        <div class="tabela-wrap"><table class="tabela tabela-densa" id="tabela-participacao"><thead></thead><tbody></tbody></table></div>
+      </details>
+    </article>
 
-    <!-- Gráficos -->
-    <section class="graficos">
-      <article class="cartao grafico-grande">
-        <h2>Evolução mensal</h2>
-        <p class="cartao-desc" id="titulo-evolucao">Por forma de pagamento ao longo do tempo.</p>
-        <div class="canvas-wrap"><canvas id="gEvolucao"></canvas></div>
-      </article>
-      <article class="cartao">
-        <h2>Participação</h2>
-        <p class="cartao-desc" id="titulo-participacao">Fatia acumulada de cada forma no período.</p>
-        <div class="canvas-wrap"><canvas id="gParticipacao"></canvas></div>
-      </article>
+    <!-- Narrativa intermediária -->
+    <section class="narrativa">
+      <p id="txt-meio">Calculando a mudança de composição…</p>
     </section>
 
-    <!-- Ranking / métricas -->
-    <section class="cartao">
-      <div class="cartao-cabecalho">
-        <div class="cartao-titulo">
-          <h2>Ranking e métricas por forma</h2>
-          <p class="cartao-desc" id="desc-ranking">Participação, crescimento interanual (YoY), CAGR e ticket médio do último mês.</p>
+    <!-- Gráfico 2: linha do tempo -->
+    <article class="cartao-v2">
+      <div class="cartao-v2-cabecalho">
+        <div>
+          <p class="rotulo-secao">Linha do tempo</p>
+          <h2>A trajetória de cada forma de pagamento</h2>
+          <p class="cartao-v2-desc" id="desc-evolucao">Série mensal por forma de pagamento.</p>
         </div>
-        <div class="filtro-periodo" role="group" aria-label="Filtro de período do ranking">
-          <label class="filtro-campo">De
-            <select id="ranking-inicio" class="sel-mes" aria-label="Mês inicial do ranking"></select>
-          </label>
-          <label class="filtro-campo">Até
-            <select id="ranking-fim" class="sel-mes" aria-label="Mês final do ranking"></select>
-          </label>
+        <div class="filtros-v2">
+          <div class="pilulas" role="tablist" aria-label="Métrica da linha do tempo">
+            <button class="pilula-btn ativo" data-metrica-evo="quantidade" role="tab">Quantidade</button>
+            <button class="pilula-btn" data-metrica-evo="valor" role="tab">Valor</button>
+            <button class="pilula-btn" data-metrica-evo="ticket" role="tab">Ticket médio</button>
+          </div>
+          <div class="pilulas" role="tablist" aria-label="Período da linha do tempo" id="periodo-evolucao"></div>
         </div>
       </div>
-      <div class="tabela-wrap">
-        <table class="tabela" id="tabela-ranking">
-          <thead>
-            <tr>
-              <th>Forma</th>
-              <th class="num">Part. valor</th>
-              <th class="num">Part. qtd.</th>
-              <th class="num">Valor (mês ref.)</th>
-              <th class="num">YoY valor</th>
-              <th class="num">CAGR a.a.</th>
-              <th class="num">Ticket médio</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+      <div class="foco-forma">
+        <span class="foco-forma-rotulo">Contar a história de:</span>
+        <div class="pilulas" role="tablist" aria-label="Forma de pagamento em foco" id="foco-forma"></div>
       </div>
+      <div class="canvas-wrap-v2"><canvas id="gEvolucaoV2"></canvas></div>
+      <details class="tabela-expansivel">
+        <summary>Ver tabela da série selecionada</summary>
+        <div class="tabela-wrap"><table class="tabela tabela-densa" id="tabela-evolucao"><thead></thead><tbody></tbody></table></div>
+      </details>
+      <div class="eventos-linha-tempo" id="eventos-linha-tempo"></div>
+    </article>
+
+    <!-- Narrativa de fechamento -->
+    <section class="narrativa narrativa-fechamento">
+      <p id="txt-fechamento">Resumindo o período selecionado…</p>
     </section>
 
-    <!-- Estatística descritiva -->
-    <section class="cartao">
-      <div class="cartao-cabecalho">
-        <div class="cartao-titulo">
-          <h2>Estatística descritiva</h2>
-          <p class="cartao-desc" id="titulo-estatistica">Sobre a série mensal de cada forma.</p>
-        </div>
-        <div class="filtro-periodo" role="group" aria-label="Filtro de período da estatística">
-          <label class="filtro-campo">De
-            <select id="est-inicio" class="sel-mes" aria-label="Mês inicial da estatística"></select>
-          </label>
-          <label class="filtro-campo">Até
-            <select id="est-fim" class="sel-mes" aria-label="Mês final da estatística"></select>
-          </label>
-        </div>
-      </div>
-      <div class="tabela-wrap">
-        <table class="tabela" id="tabela-estatistica">
-          <thead>
-            <tr>
-              <th>Forma</th>
-              <th class="num">Média</th>
-              <th class="num">Mediana</th>
-              <th class="num">Desvio-padrão</th>
-              <th class="num">Coef. variação</th>
-              <th class="num">Mínimo</th>
-              <th class="num">Máximo</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
+    <!-- Kit para IA: skill do Claude + dados prontos -->
+    <article class="cartao-v2 cartao-ia" id="usar-com-ia">
+      <p class="rotulo-secao">Use estes dados com IA</p>
+      <h2>Faça suas próprias perguntas ao Claude</h2>
+      <p class="cartao-v2-desc">Esta página foi construída com a ajuda do Claude. A mesma preparação está empacotada numa <strong>skill</strong>: um pacote de instruções que ensina o Claude a baixar a série atualizada do Banco Central, a evitar as armadilhas da fonte (unidades, zeros que significam "não existia", valores sem correção pela inflação) e a situar os números nos marcos históricos.</p>
+      <ol class="passos-ia">
+        <li>Baixe o pacote <a href="skill/meios-pagamento-bcb.zip" download>meios-pagamento-bcb.zip</a>.</li>
+        <li>No claude.ai, vá em <em>Configurações → Capacidades → Skills</em> e envie o zip. No Claude Code, descompacte a pasta em <code>~/.claude/skills/</code>.</li>
+        <li>Pergunte, por exemplo: <em>"O Pix já substituiu o boleto? Mostre em quantidade e em valor."</em></li>
+      </ol>
+      <p class="legenda-nota">Prefere outra ferramenta? Os dados tratados estão em <a href="dados/meios_pagamento_mensal.csv" download>meios_pagamento_mensal.csv</a> (quantidade em milhares de transações, valor em R$ milhões, nominal).</p>
+    </article>
+
   </main>
 
-  <footer class="rodape">
+  <footer class="rodape-v2">
     <div class="conteiner">
-      <p id="rodape-fonte"></p>
-      <p class="rodape-obs">Unidades: quantidade em milhares de transações; valor em R$ milhões.
-        Projeto de estudo — dados abertos do Banco Central do Brasil.</p>
+      <p id="rodape-fonte-v2"></p>
+      <p class="rodape-obs">Unidades: quantidade em milhares de transações; valor em R$ milhões. Projeto de estudo — dados abertos do Banco Central do Brasil.</p>
     </div>
   </footer>
 
-  <script src="js/app.js"></script>
+  <script src="js/app-v2.js"></script>
 </body>
 </html>

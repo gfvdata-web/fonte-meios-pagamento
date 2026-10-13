@@ -1,6 +1,6 @@
-/* ===== Meios de Pagamento — v2 (experimental) =====
-   Consome o mesmo dados/meios_pagamento_mensal.json da v1, mas com layout,
-   narrativa e gráficos próprios. Nada aqui é compartilhado com js/app.js. */
+/* ===== Meios de Pagamento — painel =====
+   Consome dados/meios_pagamento_mensal.json (Etapa 5) e eventos_meios_pagamento.json.
+   Substituiu o painel original (v1), que segue apenas no histórico do git. */
 
 const ARQUIVO_DADOS = "dados/meios_pagamento_mensal.json";
 const ARQUIVO_EVENTOS = "dados/eventos_meios_pagamento.json";
@@ -196,8 +196,20 @@ function renderCabecalho() {
 }
 
 // ---------- Narrativa ----------
+// Participação no último mês da série. kpis.por_forma.part_*_pct é o acumulado de toda a
+// série (desde 2002), que não serve para uma frase sobre "hoje".
 function liderPorQuantidade() {
-  return [...dados.kpis.por_forma].sort((a, b) => b.part_qtd_pct - a.part_qtd_pct)[0];
+  const i = dados.labels.length - 1;
+  const ultimo = (f, campo) => num(dados.series[f][campo][i]);
+  const totQtd = dados.formas.reduce((s, f) => s + ultimo(f, "quantidade"), 0);
+  const totVal = dados.formas.reduce((s, f) => s + ultimo(f, "valor"), 0);
+  return dados.formas
+    .map((f) => ({
+      forma: f,
+      part_qtd_pct: totQtd ? (ultimo(f, "quantidade") / totQtd) * 100 : 0,
+      part_valor_pct: totVal ? (ultimo(f, "valor") / totVal) * 100 : 0,
+    }))
+    .sort((a, b) => b.part_qtd_pct - a.part_qtd_pct)[0];
 }
 
 function renderNarrativaAbertura() {
