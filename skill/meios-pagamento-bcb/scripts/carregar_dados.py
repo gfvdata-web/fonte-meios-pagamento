@@ -27,7 +27,7 @@ import sys
 import urllib.request
 from pathlib import Path
 
-URL_SITE = "https://gfvdata-web.github.io/fonte-meios-pagamento/dados/meios_pagamento_mensal.csv"
+URL_SITE = "https://meiospagamento.gfvdata.com/dados/meios_pagamento_mensal.csv"
 URL_BCB = (
     "https://olinda.bcb.gov.br/olinda/servico/MPV_DadosAbertos/versao/v1/odata/"
     "MeiosdePagamentosMensalDA(AnoMes=@AnoMes)?@AnoMes=''&$format=json"

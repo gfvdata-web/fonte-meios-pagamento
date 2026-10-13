@@ -4,9 +4,9 @@ Pipeline e dashboard da série **BCB — Estatísticas de Meios de Pagamento (me
 quantidade e valor de movimentação por mês e forma de pagamento (Pix, TED, TEC, Cheque,
 Boleto, DOC), coletados da API Olinda/OData do Banco Central.
 
-**Painel publicado:** https://gfvdata-web.github.io/fonte-meios-pagamento/
-**Explorar os dados (Etapa E):** https://gfvdata-web.github.io/fonte-meios-pagamento/explorar.html
-**Skill do Claude:** https://gfvdata-web.github.io/fonte-meios-pagamento/skill/meios-pagamento-bcb.zip
+**Painel publicado:** https://meiospagamento.gfvdata.com/
+**Explorar os dados (Etapa E):** https://meiospagamento.gfvdata.com/explorar.html
+**Skill do Claude:** https://meiospagamento.gfvdata.com/skill/meios-pagamento-bcb.zip
 — ensina o Claude a baixar a série atualizada e analisá-la sem cair nas armadilhas da fonte.
 
 > 📄 Organização do repositório e etapas do pipeline: **[CONTEXTO.md](CONTEXTO.md)**

@@ -6,7 +6,7 @@ description: Analisa a série mensal oficial do Banco Central sobre meios de pag
 # Meios de pagamento no Brasil (BCB)
 
 Esta skill acompanha o painel **Meios de Pagamento no Brasil**
-(https://gfvdata-web.github.io/fonte-meios-pagamento/). A fonte é a estatística mensal de
+(https://meiospagamento.gfvdata.com/). A fonte é a estatística mensal de
 meios de pagamento do Banco Central do Brasil, que é aberta e gratuita.
 
 O dado é simples: uma linha por mês e por forma de pagamento, com quantidade e valor. Os
@@ -30,7 +30,7 @@ do último mês. Leia esse resumo antes de analisar: ele já responde muitas per
 **Se a rede estiver bloqueada** (comum em ambientes isolados), o script sai com código 2.
 Nesse caso:
 1. Se você tiver uma ferramenta de busca na web, tente abrir
-   `https://gfvdata-web.github.io/fonte-meios-pagamento/dados/meios_pagamento_mensal.csv`
+   `https://meiospagamento.gfvdata.com/dados/meios_pagamento_mensal.csv`
    e salvar o conteúdo num arquivo.
 2. Se não der, peça ao usuário para baixar esse CSV pelo navegador e anexá-lo à conversa.
 3. Depois rode `python scripts/carregar_dados.py --arquivo <caminho>`. O script aceita
