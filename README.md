@@ -53,6 +53,12 @@ que só renovariam o carimbo `gerado_em` não geram commit. Os arquivos escritos
 gh workflow run atualizacao-mensal.yml
 ```
 
+Para rodar os testes (sem rede, ~5 s; o pre-commit já faz isso):
+
+```bash
+bash scripts/check
+```
+
 Para ver o dashboard localmente:
 
 ```bash
@@ -72,6 +78,7 @@ python -m http.server 8000 --directory docs
 | `docs/index.html` | 6 | Dashboard (site publicado) |
 | `skill/meios-pagamento-bcb/` | 5 | Skill do Claude; empacotada em `docs/skill/meios-pagamento-bcb.zip` |
 | `docs/explorar.html` | E | Perfil das tabelas + pauta analítica |
+| `scripts/`, `tests/` | — | `bash scripts/check`: testes sem rede (pipeline com a API mockada, contrato dos dados, páginas, skill) |
 
 ## Licença dos dados
 

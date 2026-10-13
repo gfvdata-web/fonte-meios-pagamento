@@ -28,6 +28,11 @@ Coleta, trata, analisa e publica a série **BCB — Estatísticas de Meios de Pa
   que consome a saída). `run_pipeline.py` deve continuar rodando de ponta a ponta.
 - **Reprodutibilidade:** qualquer JSON publicado deve ser regenerável rodando o pipeline.
 - **Idioma do código:** nomes de funções/variáveis e comentários em português.
+- **Funcionalidade nova entra com teste:** funcionalidade nova ou alterada entra com teste no
+  `scripts/check`/`tests/` no mesmo commit (e a linha correspondente no inventário "Cobertura:"
+  do topo do `scripts/check`). Rodar `bash scripts/check` antes de commitar (o pre-commit faz
+  isso; em modo completo leva ~5 s e não usa rede). Se o BCB mudar o formato da API, atualize
+  `tests/fixtures/olinda_resposta.json` junto.
 
 ## 3. Stack
 
@@ -74,6 +79,9 @@ fonte-meios-pagamento/
 │       ├── eventos_meios_pagamento.json        # marcos da linha do tempo (a mao)
 │       └── notas_meios_pagamento_mensal.json   # Etapa E (a mao, nunca sobrescrito)
 ├── skill/meios-pagamento-bcb/  # fonte da skill do Claude (SKILL.md, scripts/, references/)
+├── scripts/check               # testes sem rede/tokens/navegador (modo completo e por arquivo)
+├── tests/                      # unittest (Python) + node --test (tests/js); fixture da API em tests/fixtures/
+├── .githooks/pre-commit        # roda scripts/check completo antes de cada commit
 └── catalogo/fonte.md           # Etapa 1 — dicionário de dados
 ```
 
