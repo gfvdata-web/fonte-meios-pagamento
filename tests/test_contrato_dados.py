@@ -265,7 +265,7 @@ class TestNotasLidasPelaExploracao(unittest.TestCase):
             self.assertRegex(c["consultado_em"], r"^\d{4}-\d{2}-\d{2}$", c["titulo"])
 
     def test_cruzamentos_viram_url_de_outra_fonte(self):
-        # explorar.js: https://gfvdata-web.github.io/fonte-<slug com hífen, sem -mensal>/
+        # explorar.js: DOMINIOS[slug] ou https://gfvdata-web.github.io/fonte-<slug com hífen, sem -mensal>/
         for c in self.n["cruzamentos"]:
             self.assertRegex(c["com_fonte"], r"^[a-z0-9_]+$")
 
