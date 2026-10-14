@@ -268,6 +268,7 @@
     const DOMINIOS = {
       meios_pagamento: "https://meiospagamento.gfvdata.com/",
       credito_modalidade: "https://creditomodalidade.gfvdata.com/",
+      arrecadacao_federal: "https://arrecadacaofederal.gfvdata.com/",
     };
     const url = (f) => {
       const slug = f.replace("_mensal", "");
