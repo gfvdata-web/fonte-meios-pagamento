@@ -76,9 +76,17 @@ python -m http.server 8000 --directory docs
 | `src/perfil/` | E | Perfil das tabelas → `docs/dados/perfil_*.json` |
 | `src/publicacao/` | 5 | JSON → `docs/dados/` |
 | `docs/index.html` | 6 | Dashboard (site publicado) |
+| `cloudflare/`, `functions/`, `wrangler.toml` | 7 | Contador de downloads (Pages Function + D1 `downloads`); `docs/_routes.json` limita as rotas |
 | `skill/meios-pagamento-bcb/` | 5 | Skill do Claude; empacotada em `docs/skill/meios-pagamento-bcb.zip` |
 | `docs/explorar.html` | E | Perfil das tabelas + pauta analítica |
 | `scripts/`, `tests/` | — | `bash scripts/check`: testes sem rede (pipeline com a API mockada, contrato dos dados, páginas, skill) |
+
+**Contagem de downloads.** O código (Pages Function `functions/_middleware.js`) só roda em `/contagem.json`,
+`/skill/*` e `/dados/*` (`docs/_routes.json`; o resto sai direto dos estáticos). Cada GET 200 inteiro do zip da
+skill ou do CSV soma 1 no D1 `downloads` (binding em `wrangler.toml`, compartilhado com os outros dois sites de
+dados abertos), por arquivo, dia (Brasília) e tipo (navegador, script — a skill baixa o CSV em Python — ou
+robô). Nada de IP nem cookie. `/contagem.json` publica o resumo, lido pelo painel-status.
+`cloudflare/contagem.mjs` é igual nos 3 repos.
 
 ## Licença dos dados
 

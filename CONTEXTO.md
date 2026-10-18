@@ -41,7 +41,7 @@ Coleta, trata, analisa e publica a série **BCB — Estatísticas de Meios de Pa
 | Coleta / tratamento / análise | Python 3.13 (`requests`, `pandas`) |
 | Publicação de dados | JSON estático gerado pelo Python |
 | Front-end / dashboard | HTML + CSS + JavaScript com Chart.js (via CDN) |
-| Hospedagem | GitHub Pages (pasta `/docs`) |
+| Hospedagem | Cloudflare Pages (projeto `meios-pagamento`, pasta `/docs`, integração Git); contador de downloads em `functions/` + `cloudflare/` (D1 `downloads`, `/contagem.json`) |
 
 ## 4. Estrutura de pastas
 
@@ -64,6 +64,9 @@ fonte-meios-pagamento/
 ├── dados/
 │   ├── brutos/                 # resposta crua da API (regenerável; fora do git)
 │   └── processados/            # CSV tidy
+├── cloudflare/contagem.mjs     # contador de downloads (igual nos 3 repos de fontes)
+├── functions/_middleware.js    # Pages Function que liga o contador (rotas em docs/_routes.json)
+├── wrangler.toml               # config do Pages: D1 `downloads` + SITE
 ├── docs/                       # Etapas 6 e E — site publicado
 │   ├── index.html                      # Etapa 6 — painel (ex-v2; a v1 só existe no histórico do git)
 │   ├── explorar.html                   # Etapa E — perfil + pauta analitica
@@ -120,7 +123,14 @@ unica alteracao que ela fez em arquivo existente foi o link "Explorar dados" na 
 | 6 | Dashboard | `docs/` | JSON → site interativo | ✅ |
 | 7 | Documentação & deploy | `README.md`, `.github/workflows/`, GitHub Pages | — → site no ar, atualizado todo mês | ✅ |
 
-**Etapa 7.** O GitHub Pages serve `docs/` da `main` (build legado, sem workflow de deploy).
+**Etapa 7.** O Cloudflare Pages serve `docs/` da `main` (integração Git, sem workflow de deploy).
+
+**Contagem de downloads.** O código (Pages Function `functions/_middleware.js`) só roda em `/contagem.json`,
+`/skill/*` e `/dados/*` (`docs/_routes.json`; o resto sai direto dos estáticos). Cada GET 200 inteiro do zip da
+skill ou do CSV soma 1 no D1 `downloads` (binding em `wrangler.toml`, compartilhado com os outros dois sites de
+dados abertos), por arquivo, dia (Brasília) e tipo (navegador, script — a skill baixa o CSV em Python — ou
+robô). Nada de IP nem cookie. `/contagem.json` publica o resumo, lido pelo painel-status.
+`cloudflare/contagem.mjs` é igual nos 3 repos.
 A atualização é automática: [`.github/workflows/atualizacao-mensal.yml`](.github/workflows/atualizacao-mensal.yml)
 roda `python run_pipeline.py` (Python 3.13) **no dia 25 de cada mês, 09:17 UTC**, e também
 sob demanda (`workflow_dispatch`). O dia 25 vem do calendário do BCB: os instrumentos mensais

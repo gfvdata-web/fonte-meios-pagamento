@@ -9,6 +9,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import tomllib
 import unittest
 import zipfile
 from pathlib import Path
@@ -78,6 +79,37 @@ class TestWorkflow(unittest.TestCase):
         m = re.search(r"json\.load\(open\('([^']+)'", WORKFLOW)
         self.assertEqual(m.group(1), f"docs/dados/{SLUG}.json")
         self.assertIn("['meta']['periodo']['fim']", WORKFLOW)
+
+
+class TestContadorDeDownloads(unittest.TestCase):
+    """Pages Functions que contam downloads no D1 (cota grátis: só /contagem.json, /skill/* e /dados/*)."""
+
+    def test_wrangler_toml_do_pages(self):
+        w = tomllib.loads((RAIZ / "wrangler.toml").read_text(encoding="utf-8"))
+        self.assertEqual(w["name"], "meios-pagamento")
+        self.assertEqual(w["pages_build_output_dir"], "docs")
+        self.assertEqual(w["vars"]["SITE"], "fonte-meios-pagamento")
+        (d1,) = w["d1_databases"]
+        self.assertEqual((d1["binding"], d1["database_name"]), ("DOWNLOADS", "downloads"))
+        self.assertRegex(d1["database_id"], r"^[0-9a-f-]{36}$")
+        self.assertNotIn("r2_buckets", w)
+
+    def test_routes_limita_as_functions_as_tres_rotas(self):
+        rotas = json.loads((RAIZ / "docs" / "_routes.json").read_text(encoding="utf-8"))
+        self.assertEqual(rotas["version"], 1)
+        self.assertEqual(rotas["include"], ["/contagem.json", "/skill/*", "/dados/*"])
+
+    def test_middleware_existe_e_usa_o_contador(self):
+        mw = ler_texto(RAIZ / "functions" / "_middleware.js")
+        self.assertIn('from "../cloudflare/contagem.mjs"', mw)
+        self.assertIn("context.env.DOWNLOADS", mw)
+        self.assertTrue((RAIZ / "cloudflare" / "contagem.mjs").is_file())
+
+    def test_contagem_mjs_igual_ao_do_arrecadacao(self):
+        outro = RAIZ.parent / "fonte-arrecadacao-federal" / "cloudflare" / "contagem.mjs"
+        if not outro.is_file():
+            self.skipTest("fonte-arrecadacao-federal não está ao lado deste repo")
+        self.assertEqual((RAIZ / "cloudflare" / "contagem.mjs").read_bytes(), outro.read_bytes())
 
 
 class TestDependencias(unittest.TestCase):
