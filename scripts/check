@@ -17,7 +17,7 @@
 #     meios_pagamento_mensal.json/.csv (campos do app-v2.js), eventos_*.json,
 #     perfil_*.json e notas_*.json (campos do explorar.js, selos do CSS, filtros da pauta)
 #   Páginas: index.html (painel), explorar.html, skill.html           tests/test_paginas.py
-#     links locais, ids x JS, abas/subabas, períodos, navegação, tema claro/escuro,
+#     links locais, ids x JS, abas/subabas, períodos, navegação, tema claro/escuro, GoatCounter com prefixo,
 #     instalação da skill (3 passos, botão do zip, tamanho anunciado, CSV alternativo)
 #   JS das páginas (app-v2.js, explorar.js) com DOM falso             tests/js/paginas.test.js
 #     formatação, períodos, granularidade, participação 100%, CAGR/ticket = Python,

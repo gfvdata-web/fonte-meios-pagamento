@@ -107,6 +107,21 @@ class TestLinksLocais(unittest.TestCase):
             self.assertEqual(repetidos, set(), nome)
 
 
+class TestRastreio(unittest.TestCase):
+    def test_goatcounter_com_prefixo_do_repo_antes_do_snippet(self):
+        # Domínio próprio: sem o prefixo, o GoatCounter registra o caminho sem /fonte-meios-pagamento/
+        # e o painel-status não conta as visitas.
+        prefixo = 'window.goatcounter = { path: (p) => "/fonte-meios-pagamento" + p };'
+        for html in sorted(DOCS.rglob("*.html")):
+            texto = html.read_text(encoding="utf-8")
+            nome = str(html.relative_to(DOCS))
+            self.assertEqual(texto.count("data-goatcounter="), 1, nome)
+            self.assertEqual(texto.count("window.goatcounter"), 1, nome)
+            self.assertIn(prefixo, texto, f"{nome}: falta o prefixo /fonte-meios-pagamento do GoatCounter")
+            self.assertLess(texto.index("window.goatcounter"), texto.index("data-goatcounter="), nome)
+            self.assertLess(texto.index("data-goatcounter="), texto.index("</head>"), nome)
+
+
 class TestJsReferenciaIdsDoHtml(unittest.TestCase):
     def _ids_usados(self, js: str) -> set[str]:
         fonte = (DOCS / js).read_text(encoding="utf-8")
