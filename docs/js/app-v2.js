@@ -53,6 +53,16 @@ function fmtQtd(x) {
   if (abs >= 1e3) return `${nf(1).format(x / 1e3)} mi`;
   return `${nf(0).format(x)} mil`;
 }
+/** Rótulo curto para dentro da barra: unidade escolhida pelo tamanho do número (mil/mi/bi/tri),
+ *  1 casa abaixo de 10 e nenhuma acima. Sem "R$" — o eixo e o tooltip já dizem a unidade. */
+function fmtCompacto(campo, x) {
+  if (x == null || x === 0) return "";
+  const unidades = campo === "quantidade" ? ["mil", "mi", "bi"] : ["mi", "bi", "tri"];
+  const abs = Math.abs(x);
+  const nivel = abs >= 999.5e3 ? 2 : abs >= 999.5 ? 1 : 0;   // 999,6 mil vira "1,0 mi", não "1.000 mil"
+  const n = x / 1e3 ** nivel;
+  return `${nf(Math.abs(n) < 10 ? 1 : 0).format(n)} ${unidades[nivel]}`;
+}
 function fmtTicket(x) { return x == null ? "—" : `R$ ${nf(2).format(x)}`; }
 function fmtCampo(campo, x) {
   if (campo === "quantidade") return fmtQtd(x);
@@ -314,6 +324,20 @@ function renderNarrativaEventos(labelsPeriodoRaw) {
     </div>`).join("");
 }
 
+/** O rótulo (fonte 10px + padding) cabe no segmento da barra? Usa as medidas finais, não as da animação. */
+function rotuloCabeNaBarra(c, texto) {
+  const el = c.chart.getDatasetMeta(c.datasetIndex).data[c.dataIndex];
+  if (!el || !texto) return false;
+  const { y, base, width } = el.getProps(["y", "base", "width"], true);  // Pode passar da barra até o vão entre colunas (o fundo escuro do rótulo segura a leitura).
+  const larguraColuna = c.chart.chartArea.width / c.chart.data.labels.length;
+  const ctx = c.chart.ctx;
+  ctx.save();
+  ctx.font = "700 10px 'IBM Plex Sans'";
+  const larguraTexto = ctx.measureText(texto).width + 8;   // + padding esquerdo/direito
+  ctx.restore();
+  return Math.abs(base - y) >= 15 && larguraTexto <= Math.max(width + 8, larguraColuna - 2);
+}
+
 // ---------- Gráfico 1: participação por período, granularidade automática (colunas empilhadas) ----------
 function renderGraficoParticipacao() {
   const [i0, i1] = periodoParaIndices(participPeriodo);
@@ -342,14 +366,16 @@ function renderGraficoParticipacao() {
     backgroundColor: corForma(f),
     maxBarThickness: 46,
     datalabels: {
-      // No modo total as colunas antigas ficam baixas demais para caber rótulo.
-      display: !emTotal,
+      // No modo total o rótulo só aparece se couber no segmento (colunas antigas ficam baixas).
+      display: emTotal ? (c) => rotuloCabeNaBarra(c, fmtCompacto(participMetrica, c.dataset.data[c.dataIndex])) : true,
       color: "#fff",
       font: { family: "IBM Plex Sans", weight: 700, size: 10 },
       backgroundColor: "rgba(0,0,0,.28)",
       borderRadius: 3,
       padding: { top: 2, bottom: 2, left: 4, right: 4 },
-      formatter: (v) => (v != null && v >= 6 ? `${Math.round(v)}%` : ""),
+      formatter: emTotal
+        ? (v) => fmtCompacto(participMetrica, v)
+        : (v) => (v != null && v >= 6 ? `${Math.round(v)}%` : ""),
     },
   }));
 

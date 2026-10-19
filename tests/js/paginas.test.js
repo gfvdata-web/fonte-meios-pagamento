@@ -78,6 +78,14 @@ test("formatação de valores, quantidades e meses", () => {
   assert.match(rodar("fmtQtd(12)"), /^12 mil$/);
   assert.equal(rodar("fmtPct(null)"), "—");
   assert.equal(rodar("fmtPct(95.04)"), "95,0%");
+  assert.equal(rodar("fmtCompacto('quantidade', 43912345)"), "44 bi");
+  assert.equal(rodar("fmtCompacto('quantidade', 4612345)"), "4,6 bi");
+  assert.equal(rodar("fmtCompacto('quantidade', 850000)"), "850 mi");
+  assert.equal(rodar("fmtCompacto('quantidade', 999600)"), "1,0 bi");
+  assert.equal(rodar("fmtCompacto('quantidade', 12)"), "12 mil");
+  assert.equal(rodar("fmtCompacto('valor', 3733392)"), "3,7 tri");
+  assert.equal(rodar("fmtCompacto('valor', 29333)"), "29 bi");
+  assert.equal(rodar("fmtCompacto('valor', 0)"), "");
   assert.equal(rodar("fmtTicket(null)"), "—");
   assert.match(rodar("fmtTicket(1234.5)"), /^R\$ 1\.234,50$/);
 });
