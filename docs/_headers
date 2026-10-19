@@ -1,8 +1,0 @@
-# Cloudflare Pages: JS/CSS/dados revalidam a cada visita (ETag => 304 barato).
-# Sem isso o navegador guarda o JS por 4h e um HTML novo roda com JS velho (botão que não responde).
-/js/*
-  Cache-Control: no-cache
-/css/*
-  Cache-Control: no-cache
-/dados/*
-  Cache-Control: no-cache

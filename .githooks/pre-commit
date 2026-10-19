@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
-# Trava de commit: roda os testes completos (scripts/check, sem rede e sem tokens).
+# Trava de commit: versiona os assets (?v=hash) e roda os testes completos (scripts/check, sem rede e sem tokens).
 # Para pular numa emergência: git commit --no-verify (evitar).
 raiz="$(git rev-parse --show-toplevel)"
+if [ -f "$raiz/scripts/versionar_assets.py" ]; then
+  alteradas="$(PYTHONDONTWRITEBYTECODE=1 python "$raiz/scripts/versionar_assets.py")" || exit 1
+  [ -n "$alteradas" ] && printf '%s\n' "$alteradas" | while IFS= read -r p; do git add -- "$p"; done
+fi
 [ -f "$raiz/scripts/check" ] || exit 0
 if ! saida="$(bash "$raiz/scripts/check" 2>&1)"; then
   echo "Commit bloqueado: scripts/check falhou." >&2

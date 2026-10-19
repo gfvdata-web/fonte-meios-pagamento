@@ -286,3 +286,31 @@ class TestPaginaDeInstalacaoDaSkill(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestVersaoDosAssets(unittest.TestCase):
+    """css/ e js/ locais saem com ?v=<hash>: a zona força cache de 4h nos assets (HTML vem com max-age=0).
+    O hash é atualizado pelo .githooks/pre-commit (scripts/versionar_assets.py)."""
+
+    def test_todo_css_e_js_local_tem_versao(self):
+        sem_versao = [f"docs/{nome}: {url}" for nome in PAGINAS for tag, url, _ in _pagina(nome).links
+                      if _eh_local(url) and urlparse(url).path.startswith(("css/", "js/"))
+                      and not re.search(r"[?&]v=[0-9a-f]{8}\b", url)]
+        self.assertEqual(sem_versao, [])
+
+    def test_versionar_troca_o_hash_quando_o_asset_muda(self):
+        import tempfile
+        from scripts import versionar_assets as va
+        with tempfile.TemporaryDirectory() as tmp:
+            docs = Path(tmp)
+            (docs / "js").mkdir()
+            (docs / "js" / "a.js").write_text("1", encoding="utf-8")
+            (docs / "p.html").write_text('<script src="js/a.js"></script><a href="x.html">x</a>', encoding="utf-8")
+            self.assertEqual(len(va.main(docs)), 1)
+            v1 = (docs / "p.html").read_text(encoding="utf-8")
+            self.assertRegex(v1, r'src="js/a\.js\?v=[0-9a-f]{8}"')
+            self.assertIn('href="x.html"', v1)
+            self.assertEqual(va.main(docs), [])                       # idempotente
+            (docs / "js" / "a.js").write_text("2", encoding="utf-8")
+            va.main(docs)
+            self.assertNotEqual((docs / "p.html").read_text(encoding="utf-8"), v1)

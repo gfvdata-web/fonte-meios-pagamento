@@ -17,6 +17,7 @@
 #     meios_pagamento_mensal.json/.csv (campos do app-v2.js), eventos_*.json,
 #     perfil_*.json e notas_*.json (campos do explorar.js, selos do CSS, filtros da pauta)
 #   Páginas: index.html (painel), explorar.html, skill.html           tests/test_paginas.py
+#     css/js com ?v=hash (scripts/versionar_assets.py, rodado pelo .githooks/pre-commit)
 #     links locais, ids x JS, abas/subabas, períodos, navegação, tema claro/escuro, GoatCounter com prefixo,
 #     instalação da skill (3 passos, botão do zip, tamanho anunciado, CSV alternativo)
 #   JS das páginas (app-v2.js, explorar.js) com DOM falso             tests/js/paginas.test.js
@@ -61,6 +62,7 @@ case "$alvo" in
   skill/*)                  testes_py tests.test_skill tests.test_sintaxe ;;
   cloudflare/*|functions/*|wrangler.toml|docs/_routes.json) testes_js; testes_py tests.test_automacao ;;
   catalogo/*)               testes_py tests.test_catalogo ;;
+  scripts/*.py|.githooks/*) testes_py tests.test_paginas tests.test_sintaxe ;;
   requirements.txt)         testes_py tests.test_automacao ;;
   docs/js/*.js)             rodar node --check "$alvo"; testes_js; testes_py tests.test_paginas tests.test_contrato_dados ;;
   docs/dados/*)             testes_py tests.test_contrato_dados tests.test_sintaxe tests.test_skill tests.test_pipeline.TestPipelineCompleto ;;
