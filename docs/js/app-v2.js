@@ -27,6 +27,7 @@ let graficoParticipacao = null;
 let graficoEvolucao = null;
 
 let participMetrica = "quantidade"; // "quantidade" | "valor"
+let participModo = "pct";          // "pct" (colunas 100%) | "total" (altura = total do período)
 let participPeriodo = "10a";
 let evoMetrica = "quantidade";      // "quantidade" | "valor" | "ticket"
 let evoPeriodo = "5a";
@@ -149,6 +150,7 @@ function agregarParticipacaoPorPeriodo(i0, i1, campo, granularidade) {
   const periodos = [];
   const rotulos = {};
   const somaPorPeriodo = {};
+  const mesesPorPeriodo = {};
   for (let k = i0; k <= i1; k++) {
     const label = dados.labels[k];
     const ano = Number(label.slice(0, 4));
@@ -170,7 +172,8 @@ function agregarParticipacaoPorPeriodo(i0, i1, campo, granularidade) {
       const anoFim = anoIni + granularidade.anosPorBloco - 1;
       chave = `B${bloco}`; rotulo = granularidade.anosPorBloco > 1 ? `${anoIni}–${anoFim}` : `${anoIni}`;
     }
-    if (!somaPorPeriodo[chave]) { somaPorPeriodo[chave] = {}; periodos.push(chave); rotulos[chave] = rotulo; }
+    if (!somaPorPeriodo[chave]) { somaPorPeriodo[chave] = {}; periodos.push(chave); rotulos[chave] = rotulo; mesesPorPeriodo[chave] = 0; }
+    mesesPorPeriodo[chave] += 1;
     dados.formas.forEach((f) => {
       const v = num(dados.series[f][campo][k]);
       somaPorPeriodo[chave][f] = (somaPorPeriodo[chave][f] || 0) + v;
@@ -178,14 +181,21 @@ function agregarParticipacaoPorPeriodo(i0, i1, campo, granularidade) {
   }
   const rotulosOrdenados = periodos.map((p) => rotulos[p]);
   const share = {}; // forma -> [% por período, na mesma ordem de `periodos`]
-  dados.formas.forEach((f) => { share[f] = []; });
+  const total = {}; // forma -> [soma absoluta por período, na mesma ordem de `periodos`]
+  dados.formas.forEach((f) => { share[f] = []; total[f] = []; });
   periodos.forEach((p) => {
-    const total = dados.formas.reduce((s, f) => s + somaPorPeriodo[p][f], 0);
+    const totalPeriodo = dados.formas.reduce((s, f) => s + somaPorPeriodo[p][f], 0);
     dados.formas.forEach((f) => {
-      share[f].push(total ? (somaPorPeriodo[p][f] / total) * 100 : null);
+      share[f].push(totalPeriodo ? (somaPorPeriodo[p][f] / totalPeriodo) * 100 : null);
+      total[f].push(somaPorPeriodo[p][f]);
     });
   });
-  return { periodos: rotulosOrdenados, share };
+  // Período com menos meses que o bucket (início da janela ou semestre/ano em andamento):
+  // no modo Total a coluna sai mais baixa sem ser queda de verdade.
+  const mesesBucket = { mensal: 1, trimestral: 3, semestral: 6, anual: 12 }[granularidade.codigo]
+    ?? 12 * granularidade.anosPorBloco;
+  const incompleto = periodos.map((p) => mesesPorPeriodo[p] < mesesBucket);
+  return { periodos: rotulosOrdenados, share, total, incompleto };
 }
 
 // ---------- Renderização: cabeçalho ----------
@@ -308,20 +318,32 @@ function renderNarrativaEventos(labelsPeriodoRaw) {
 function renderGraficoParticipacao() {
   const [i0, i1] = periodoParaIndices(participPeriodo);
   const granularidade = escolherGranularidade(i1 - i0 + 1, maxColunasTela());
-  const { periodos, share } = agregarParticipacaoPorPeriodo(i0, i1, participMetrica, granularidade);
+  const { periodos, share, total, incompleto } = agregarParticipacaoPorPeriodo(i0, i1, participMetrica, granularidade);
+  const emTotal = participModo === "total";
+  const temIncompleto = emTotal && incompleto.some(Boolean);
+  const rotulosEixo = emTotal ? periodos.map((p, i) => (incompleto[i] ? `${p}*` : p)) : periodos;
+  const intervalo = `(${periodos[0] || "—"} a ${periodos[periodos.length - 1] || "—"})`;
 
-  document.getElementById("desc-participacao").textContent =
-    `Fatia de cada forma de pagamento no total de ${rotuloMetrica(participMetrica)} `
-    + `por ${ROTULO_GRANULARIDADE[granularidade.codigo]} `
-    + `(${periodos[0] || "—"} a ${periodos[periodos.length - 1] || "—"}).`;
+  document.getElementById("desc-participacao").textContent = emTotal
+    ? `Total de ${rotuloMetrica(participMetrica)} por ${ROTULO_GRANULARIDADE[granularidade.codigo]}, `
+      + `empilhado por forma de pagamento ${intervalo}.`
+    : `Fatia de cada forma de pagamento no total de ${rotuloMetrica(participMetrica)} `
+      + `por ${ROTULO_GRANULARIDADE[granularidade.codigo]} ${intervalo}.`;
+  document.getElementById("nota-participacao").textContent = (emTotal
+    ? "A altura de cada coluna é o total do período e cada segmento é o quanto cada forma movimentou."
+      + (temIncompleto ? " * Período incompleto na janela (ainda em andamento ou cortado no início): a coluna fica mais baixa sem ser queda." : "")
+    : "Cada coluna soma 100% — o tamanho de cada segmento é a fatia daquela forma no período.")
+    + " A granularidade do eixo (mês/trimestre/semestre/ano) se ajusta automaticamente ao intervalo e ao tamanho da tela.";
 
   const ctx = document.getElementById("gParticipacaoAno");
   const datasets = dados.formas.map((f) => ({
     label: f,
-    data: share[f],
+    data: emTotal ? total[f] : share[f],
     backgroundColor: corForma(f),
     maxBarThickness: 46,
     datalabels: {
+      // No modo total as colunas antigas ficam baixas demais para caber rótulo.
+      display: !emTotal,
       color: "#fff",
       font: { family: "IBM Plex Sans", weight: 700, size: 10 },
       backgroundColor: "rgba(0,0,0,.28)",
@@ -342,7 +364,7 @@ function renderGraficoParticipacao() {
   if (graficoParticipacao) graficoParticipacao.destroy();
   graficoParticipacao = new Chart(ctx, {
     type: "bar",
-    data: { labels: periodos, datasets },
+    data: { labels: rotulosEixo, datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
@@ -353,7 +375,9 @@ function renderGraficoParticipacao() {
           intersect: false,
           callbacks: {
             title: (items) => items[0]?.label ?? "",
-            label: (i) => `${i.dataset.label}: ${fmtPct(i.parsed.y)}`,
+            label: (i) => (emTotal
+              ? `${i.dataset.label}: ${fmtCampo(participMetrica, i.parsed.y)} (${fmtPct(share[i.dataset.label][i.dataIndex])})`
+              : `${i.dataset.label}: ${fmtPct(i.parsed.y)}`),
           },
         },
       },
@@ -361,24 +385,27 @@ function renderGraficoParticipacao() {
       scales: {
         x: { stacked: true, ticks: { color: cssVar("--texto-suave"), autoSkip: true, maxRotation: 0 }, grid: { display: false } },
         y: {
-          stacked: true, beginAtZero: true, max: 100,
-          ticks: { color: cssVar("--texto-suave"), callback: (v) => `${v}%` },
+          stacked: true, beginAtZero: true, max: emTotal ? undefined : 100,
+          ticks: { color: cssVar("--texto-suave"), callback: (v) => (emTotal ? fmtCampo(participMetrica, v) : `${v}%`) },
           grid: { color: cssVar("--borda") },
         },
       },
     },
   });
 
-  renderTabelaParticipacao(periodos, share);
+  renderTabelaParticipacao(rotulosEixo, emTotal ? total : share, emTotal);
   renderNarrativaMeio(periodos, share, granularidade);
 }
 
-function renderTabelaParticipacao(periodos, share) {
+function renderTabelaParticipacao(periodos, valores, emTotal) {
   const thead = document.querySelector("#tabela-participacao thead");
   const tbody = document.querySelector("#tabela-participacao tbody");
+  const fmt = emTotal ? (v) => fmtCampo(participMetrica, v) : (v) => fmtPct(v);
+  document.getElementById("resumo-tabela-participacao").textContent =
+    `Ver tabela de participação por período (${emTotal ? "total" : "%"})`;
   thead.innerHTML = `<tr><th>Forma</th>${periodos.map((p) => `<th>${p}</th>`).join("")}</tr>`;
   tbody.innerHTML = dados.formas.map((f) => `
-    <tr><td>${pilulaForma(f)}</td>${share[f].map((v) => `<td>${fmtPct(v)}</td>`).join("")}</tr>
+    <tr><td>${pilulaForma(f)}</td>${valores[f].map((v) => `<td>${fmt(v)}</td>`).join("")}</tr>
   `).join("");
 }
 
@@ -529,6 +556,16 @@ function montarPilulasForma() {
 }
 
 function ligarFiltros() {
+  document.querySelectorAll("[data-modo-part]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (btn.dataset.modoPart === participModo) return;
+      document.querySelectorAll("[data-modo-part]").forEach((b) => b.classList.remove("ativo"));
+      btn.classList.add("ativo");
+      participModo = btn.dataset.modoPart;
+      renderGraficoParticipacao();
+    });
+  });
+
   document.querySelectorAll("[data-metrica-part]").forEach((btn) => {
     btn.addEventListener("click", () => {
       if (btn.dataset.metricaPart === participMetrica) return;

@@ -130,6 +130,31 @@ test("a participação agregada soma 100% em cada período, em todas as granular
   assert.ok([20, 21].includes(trimestral.periodos.length), `${trimestral.periodos.length} trimestres`);   // 60 meses = 20 ou 21 trimestres
 });
 
+test("o total agregado (modo Total) soma a série mensal e é coerente com a fatia", () => {
+  const { rodar, publicado } = carregarPainel();
+  const ultimo = publicado.labels.length - 1;
+  const i0 = ultimo - 59;
+  for (const gran of ["{codigo:'mensal'}", "{codigo:'trimestral'}", "{codigo:'anual'}", "{codigo:'multianual',anosPorBloco:5}"]) {
+    for (const campo of ["quantidade", "valor"]) {
+      const r = rodar(`agregarParticipacaoPorPeriodo(${i0}, ${ultimo}, '${campo}', ${gran})`);
+      publicado.formas.forEach((f) => {
+        const somaAgregada = r.total[f].reduce((s, v) => s + v, 0);
+        const somaMensal = publicado.series[f][campo].slice(i0, ultimo + 1).reduce((s, v) => s + (v ?? 0), 0);
+        assert.ok(Math.abs(somaAgregada - somaMensal) < 1e-6 * Math.max(1, somaMensal), `${gran} ${campo} ${f}`);
+      });
+      assert.equal(r.incompleto.length, r.periodos.length);
+      if (gran === "{codigo:'mensal'}") assert.ok(r.incompleto.every((x) => !x), "mês nunca é incompleto");
+      r.periodos.forEach((_, i) => {
+        const totPeriodo = publicado.formas.reduce((s, f) => s + r.total[f][i], 0);
+        publicado.formas.forEach((f) => {
+          if (!totPeriodo) return;
+          assert.ok(Math.abs(r.share[f][i] - (r.total[f][i] / totPeriodo) * 100) < 1e-9, `${gran} ${campo} ${f} período ${i}`);
+        });
+      });
+    }
+  }
+});
+
 test("CAGR do JS bate com o cagr_valor_aa_pct publicado pelo Python", () => {
   const { rodar, publicado } = carregarPainel();
   const ultimo = publicado.labels.length - 1;

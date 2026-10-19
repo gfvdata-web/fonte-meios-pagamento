@@ -150,6 +150,7 @@ main { padding: 40px 0 56px; }
 
 /* ---------- Filtros (pílulas) ---------- */
 .filtros-v2 { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; flex-shrink: 0; }
+.filtros-v2-linha { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
 .pilulas { display: inline-flex; flex-wrap: wrap; gap: 4px; background: var(--bg); border: 1px solid var(--borda); border-radius: 999px; padding: 3px; }
 .pilula-btn {
   border: 0; background: transparent; color: var(--texto-suave);
@@ -260,6 +261,7 @@ main { padding: 40px 0 56px; }
 @media (max-width: 760px) {
   .cartao-v2-cabecalho { flex-direction: column; }
   .filtros-v2 { align-items: flex-start; width: 100%; }
+  .filtros-v2-linha { justify-content: flex-start; }
   .tema-switch-v2 { top: auto; bottom: 14px; right: 14px; }
   .tema-switch-v2__label { display: none; }
   .tema-switch-v2__btn { padding: 8px 11px; }

@@ -53,17 +53,23 @@
           <p class="cartao-v2-desc" id="desc-participacao">Fatia de cada forma de pagamento no total de cada período.</p>
         </div>
         <div class="filtros-v2">
-          <div class="pilulas" role="tablist" aria-label="Métrica do gráfico de participação">
-            <button class="pilula-btn ativo" data-metrica-part="quantidade" role="tab">Quantidade</button>
-            <button class="pilula-btn" data-metrica-part="valor" role="tab">Valor</button>
+          <div class="filtros-v2-linha">
+            <div class="pilulas" role="tablist" aria-label="Escala do gráfico de participação">
+              <button class="pilula-btn ativo" data-modo-part="pct" role="tab">100%</button>
+              <button class="pilula-btn" data-modo-part="total" role="tab">Total</button>
+            </div>
+            <div class="pilulas" role="tablist" aria-label="Métrica do gráfico de participação">
+              <button class="pilula-btn ativo" data-metrica-part="quantidade" role="tab">Quantidade</button>
+              <button class="pilula-btn" data-metrica-part="valor" role="tab">Valor</button>
+            </div>
           </div>
           <div class="pilulas" role="tablist" aria-label="Período do gráfico de participação" id="periodo-participacao"></div>
         </div>
       </div>
       <div class="canvas-wrap-v2 canvas-participacao"><div class="canvas-scroll-inner" id="participacaoScrollInner"><canvas id="gParticipacaoAno"></canvas></div></div>
-      <p class="legenda-nota">Cada coluna soma 100% — o tamanho de cada segmento é a fatia daquela forma no período. A granularidade do eixo (mês/trimestre/semestre/ano) se ajusta automaticamente ao intervalo e ao tamanho da tela.</p>
+      <p class="legenda-nota" id="nota-participacao">Cada coluna soma 100% — o tamanho de cada segmento é a fatia daquela forma no período. A granularidade do eixo (mês/trimestre/semestre/ano) se ajusta automaticamente ao intervalo e ao tamanho da tela.</p>
       <details class="tabela-expansivel">
-        <summary>Ver tabela de participação por período (%)</summary>
+        <summary id="resumo-tabela-participacao">Ver tabela de participação por período (%)</summary>
         <div class="tabela-wrap"><table class="tabela tabela-densa" id="tabela-participacao"><thead></thead><tbody></tbody></table></div>
       </details>
     </article>
