@@ -453,19 +453,53 @@ function comAlpha(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
+const FONTE_ROTULO_EVENTO = { size: 9, family: "IBM Plex Sans" };
+const PADDING_ROTULO_EVENTO = 4;
+const ALTURA_FAIXA_ROTULO = 18;
+
+/** Distribui os rótulos em faixas verticais: um rótulo que encostaria em outro da mesma faixa desce para a próxima. */
+function faixasRotulosEventos(chart, posicoes, titulos) {
+  const escalaX = chart.scales.x;
+  if (!escalaX) return posicoes.map(() => 0);
+  const medidor = chart.ctx;
+  medidor.save();
+  medidor.font = `${FONTE_ROTULO_EVENTO.size}px "${FONTE_ROTULO_EVENTO.family}"`;
+  const caixas = posicoes.map((p, idx) => {
+    const largura = medidor.measureText(titulos[idx]).width + 2 * PADDING_ROTULO_EVENTO;
+    // O plugin empurra para dentro da área do gráfico o rótulo que passaria da borda.
+    const { left, right } = chart.chartArea;
+    const ini = Math.max(left, Math.min(escalaX.getPixelForValue(p) - largura / 2, right - largura));
+    return { idx, ini, fim: ini + largura };
+  });
+  medidor.restore();
+  const fimPorFaixa = [];
+  const faixas = new Array(posicoes.length).fill(0);
+  caixas.sort((a, b) => a.ini - b.ini).forEach((c) => {
+    let faixa = fimPorFaixa.findIndex((fim) => c.ini > fim + 4);
+    if (faixa === -1) faixa = fimPorFaixa.length;
+    fimPorFaixa[faixa] = c.fim;
+    faixas[c.idx] = faixa;
+  });
+  return faixas;
+}
+
 /** Linhas verticais tracejadas nos meses em que há evento catalogado para a forma em foco. */
 function construirAnotacoesEventos(labelsPeriodoRaw) {
   const anotacoes = {};
-  eventosEmFoco(labelsPeriodoRaw).forEach((e, idx) => {
-    const posicao = labelsPeriodoRaw.indexOf(e.data);
+  const lista = eventosEmFoco(labelsPeriodoRaw);
+  const posicoes = lista.map((e) => labelsPeriodoRaw.indexOf(e.data));
+  const titulos = lista.map((e) => e.titulo);
+  lista.forEach((e, idx) => {
+    const posicao = posicoes[idx];
     anotacoes[`evento${idx}`] = {
       type: "line", xMin: posicao, xMax: posicao,
       borderColor: "rgba(20,24,26,.4)", borderWidth: 1, borderDash: [4, 4],
       label: {
         display: true, content: e.titulo, position: "end", rotation: 0,
-        yAdjust: 10,
+        // Recalculado a cada layout (a largura do gráfico muda com a tela).
+        yAdjust: ({ chart }) => 10 + ALTURA_FAIXA_ROTULO * faixasRotulosEventos(chart, posicoes, titulos)[idx],
         backgroundColor: "rgba(20,24,26,.85)", color: "#fff",
-        font: { size: 9, family: "IBM Plex Sans" }, padding: 4,
+        font: FONTE_ROTULO_EVENTO, padding: PADDING_ROTULO_EVENTO,
       },
     };
   });
