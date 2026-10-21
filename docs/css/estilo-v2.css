@@ -175,6 +175,10 @@ main { padding: 40px 0 56px; }
   display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--borda);
 }
 .evento-item:first-of-type { border-top: none; }
+.evento-num {
+  flex-shrink: 0; width: 20px; height: 20px; border-radius: 4px; margin-top: -1px;
+  background: var(--texto); color: var(--superficie); font: 700 .72rem/20px "IBM Plex Sans", sans-serif; text-align: center;
+}
 .evento-data {
   flex-shrink: 0; width: 64px; font-size: .78rem; font-weight: 700; color: var(--verde-escuro);
   font-family: "IBM Plex Sans", sans-serif;

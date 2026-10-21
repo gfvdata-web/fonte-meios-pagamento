@@ -314,8 +314,10 @@ function renderNarrativaEventos(labelsPeriodoRaw) {
       + `<p class="eventos-vazio">Nenhum evento catalogado nesta janela de tempo para o ${focoForma} — amplie o período para ver o contexto.</p>`;
     return;
   }
-  alvo.innerHTML = titulo + relevantes.map((e) => `
+  // O número casa com o marcador do gráfico (no celular o marcador mostra só o número).
+  alvo.innerHTML = titulo + relevantes.map((e, idx) => `
     <div class="evento-item">
+      <span class="evento-num">${idx + 1}</span>
       <div class="evento-data">${fmtMesAno(e.data)}</div>
       <div class="evento-corpo">
         <h4>${e.titulo}</h4>
@@ -456,6 +458,13 @@ function comAlpha(hex, alpha) {
 const FONTE_ROTULO_EVENTO = { size: 9, family: "IBM Plex Sans" };
 const PADDING_ROTULO_EVENTO = 4;
 const ALTURA_FAIXA_ROTULO = 18;
+// Abaixo desta largura de gráfico os títulos se embolam: o marcador vira o número do evento na lista.
+const LARGURA_MIN_TITULO_EVENTO = 640;
+
+/** Texto do marcador do evento: título no desktop, número (o mesmo da lista abaixo) em tela estreita. */
+function textosRotulosEventos(chart, titulos) {
+  return chart.width < LARGURA_MIN_TITULO_EVENTO ? titulos.map((_, idx) => String(idx + 1)) : titulos;
+}
 
 /** Distribui os rótulos em faixas verticais: um rótulo que encostaria em outro da mesma faixa desce para a próxima. */
 function faixasRotulosEventos(chart, posicoes, titulos) {
@@ -493,12 +502,14 @@ function construirAnotacoesEventos(labelsPeriodoRaw) {
     const posicao = posicoes[idx];
     anotacoes[`evento${idx}`] = {
       type: "line", xMin: posicao, xMax: posicao,
-      borderColor: "rgba(20,24,26,.4)", borderWidth: 1, borderDash: [4, 4],
+      borderColor: cssVar("--texto-suave"), borderWidth: 1, borderDash: [4, 4],
       label: {
-        display: true, content: e.titulo, position: "end", rotation: 0,
-        // Recalculado a cada layout (a largura do gráfico muda com a tela).
-        yAdjust: ({ chart }) => 10 + ALTURA_FAIXA_ROTULO * faixasRotulosEventos(chart, posicoes, titulos)[idx],
-        backgroundColor: "rgba(20,24,26,.85)", color: "#fff",
+        display: true, position: "end", rotation: 0,
+        // Recalculados a cada layout (a largura do gráfico muda com a tela).
+        content: ({ chart }) => textosRotulosEventos(chart, titulos)[idx],
+        yAdjust: ({ chart }) => 10 + ALTURA_FAIXA_ROTULO
+          * faixasRotulosEventos(chart, posicoes, textosRotulosEventos(chart, titulos))[idx],
+        backgroundColor: cssVar("--texto"), color: cssVar("--superficie"),
         font: FONTE_ROTULO_EVENTO, padding: PADDING_ROTULO_EVENTO,
       },
     };

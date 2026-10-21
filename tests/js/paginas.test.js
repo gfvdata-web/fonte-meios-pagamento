@@ -204,6 +204,10 @@ test("rodapé e eventos da linha do tempo renderizam com os dados publicados", (
   const html = document.getElementById("eventos-linha-tempo").innerHTML;
   assert.match(html, /class="evento-item"/);
   assert.match(html, /Fonte ↗/);
+  assert.match(html, /class="evento-num">1</);
+  // Gráfico estreito (celular): o marcador vira o número do evento na lista; largo: o título.
+  assert.deepStrictEqual(rodar("textosRotulosEventos({ width: 300 }, ['A', 'B'])"), ["1", "2"]);
+  assert.deepStrictEqual(rodar("textosRotulosEventos({ width: 900 }, ['A', 'B'])"), ["A", "B"]);
   rodar("focoForma = 'Pix'; renderNarrativaEventos([])");
   assert.match(document.getElementById("eventos-linha-tempo").innerHTML, /Nenhum evento catalogado/);
 });
